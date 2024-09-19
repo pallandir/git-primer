@@ -17,7 +17,7 @@
   </p>
 </div>
 
-## Some vocabulary
+## Terminology
 
 <details>
   <summary>What is a remote ?</summary>
