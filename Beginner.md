@@ -1,5 +1,16 @@
 ## About This 101
 
 In professional development and large team projects, developers will inevitably rely on Version Control Systems (VCS). While these tools are powerful and significantly enhance productivity, their extensive features can sometimes feel overwhelming or intimidating.
-This 101 guide serves as an introduction to Git commands, covering both beginner and advanced topics. Our goal is to help you feel confident and at ease when initializing, updating, or resolving conflicts in a project—showing that Git is neither as complex nor as daunting as it may seem.
+This 101 guide serves as an introduction to Git commands, covering both beginner and advanced topics. Our goal is to help you feel confident and at ease when initializing, updating, or resolving conflicts in a project showing that Git is neither as complex nor as daunting as it may seem.
 Each command and scenario is detailed in a comprehensive cheat sheet, complete with examples and illustrations for clarity.
+
+## Understand git 
+
+Before diving into commands and setup it's important to understand how git works and what defines this tool. 
+You can refer at the diagram underneath to better visualize the different steps that will be involved while you track your files in a project. 
+
+The first component of this architecture is the workspace. It's the place where your project lives locally. the place where you will be able to create, edit or delete any file. `Any files here are not tracked by git if you didn't add them before`
+
+The second component is the staging area. Every files `added` here are tracked by git and you will be able to manage them directly with git. 
+
+The third part of this architecture is your local clone of the repository (Called local repository). Files sent there doesn't not appear anymore into the staging area and are ready to be pushed to your remote repository. It's one of the last step before your content is delivered to the server and made available for other contributors.  
