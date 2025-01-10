@@ -4,6 +4,14 @@ In professional development and large team projects, developers will inevitably 
 This 101 guide serves as an introduction to Git commands, covering both beginner and advanced topics. Our goal is to help you feel confident and at ease when initializing, updating, or resolving conflicts in a project showing that Git is neither as complex nor as daunting as it may seem.
 Each command and scenario is detailed in a comprehensive cheat sheet, complete with examples and illustrations for clarity.
 
+## Why git
+
+Git is a powerful tool designed to manage versions of a same content, whether it’s code, articles, or entire projects. In any project, nothing is ever set in stone things evolve, and with evolution comes the possibility of mistakes. 
+It’s quite common to need to revert to a previous version to understand the origin of a bug, fix a typo or error, or recover something accidentally deleted. This is where Git comes in. It offers a comprehensive set of tools to manage these tasks effectively. 
+Git is primarily accessed through a command-line interface (CLI), which provides powerful functionality, though many user-friendly graphical user interfaces (GUIs) have emerged to make Git even more accessible. 
+
+> More on these interfaces here --> [[A note on Git GUIs]]. 
+
 ## Understand git 
 
 Before diving into commands and setup it's important to understand how git works and what defines this tool. 
