@@ -52,4 +52,6 @@ git remotes -v # This will list all configured romote for your current repositor
 With Git, you can take your configuration even further by adding multiple remotes, enabling you to fetch or push code to various repositories or platforms. This approach allows you to back up your code across different platforms for example or facilitate resource sharing among multiple teams, making collaboration and redundancy more efficient.
 Looking for configured remotes is a good habit in order to check that you are interacting with the right repository and work with well configured remotes. 
 
+## Creating a branch
 
+soon

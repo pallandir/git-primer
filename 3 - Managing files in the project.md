@@ -1,15 +1,17 @@
 ## Updating a project
 
-From the first course [[1 - As a beginning]] you know now what are the different stages involved by git when you update your project. 
-
-Developing a project can mean adding, removing or updating files in your local repository. At a point you will want to submit these changes so they are part of the final version of your project and other contributors can include them in their local version of the project. 
+As discussed in the first course, [[1 - As a beginning]],  you now have a clear understanding of the various stages involved in managing updates with Git. 
+During development, you may need to add, remove, or modify files within your local repository. Eventually, you will want to commit these changes to incorporate them into the project's official version, enabling other contributors to integrate them into their local repositories.
 
 ## Files operations
 
-In order to know what changes you made to your project, you will surely need to have a status of what has been done so far. To do so you can ask git to give you a status of your current project file structure and changes by running : 
+To track the changes made to your project, it’s essential to review the current status of your work. 
+Git provides a way to view the state of your project’s file structure and modifications. You can do this by running the following command:
 
 ```sh
 git status
 ```
 
-This is certainly one of the most common command in git. It will show you the status of your files and split the view according to different colors based on if your file is not tracked by git in red (the files is in the workspace area), if it's staged in green (the files are in the staging area) or if you comitted them you will see a status message saying 
+This is undoubtedly one of the most frequently used commands in Git. It displays the status of your files, categorizing them using color codes. Files not tracked by Git appear in red (indicating they are in the workspace), staged files are shown in green (indicating they are in the staging area), and committed files generate a status message confirming their successful inclusion in the repository.
+
+![committed files|451](./resources/git_commit.png)
