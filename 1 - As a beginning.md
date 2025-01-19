@@ -16,7 +16,7 @@ Git is primarily accessed through a command-line interface (CLI), which provides
 
 Before diving into commands and setup it's important to understand how git works and what defines this tool.
 You can refer at the diagram underneath to better visualize the different steps that will be involved while you track your files in a project.
-![git areas](./resources/git_areas.png)
+![git areas|634](./resources/git_areas.png)
 
 The first component of this architecture is the workspace. It's the place where your project lives locally. the place where you will be able to create, edit or delete any file. `Any files here are not tracked by git if you didn't add them before`.
 
