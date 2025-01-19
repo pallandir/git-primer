@@ -54,3 +54,18 @@ It is strongly recommended to include a commit message, as this helps you and yo
 You are not required to use the `-m` option with the `git commit` command. Instead, you can run `git commit` without it, and a text editor of your choice will open, allowing you to write a more detailed commit message. Here's an example of what it might look like:
 
 ![commit_message](./resources/commit_message.png)
+
+
+## Resetting staged changes 
+
+Sometimes, instead of committing your changes, you may want to reset them to continue working on them or remove them from the project entirely. To do this, you can run the following command:
+
+```sh
+git reset <file_1>
+```
+
+This will remove the specified file from the staging area. Alternatively, you can reset all files in the staging area by running `git reset`, which will unstage all changes, allowing you to continue working on them or discard them as needed.
+
+> Note : This command will simply remove the files from the staging area and place them back in your workspace. All your changes will remain intact, and you'll be able to continue working on them without losing any progress.
+
+The `reset` command can be quite complex, as it allows you to perform various actions that can significantly impact your work. We will explore these advanced features in more detail in [[6 - Advanced topics]]
