@@ -38,4 +38,19 @@ For more advanced use, Git also provides a command that allows you to add all fi
 git add . :^file_1 :^file_2
 ```
 
-This unusual notation instructs Git that the file following the negation operator `:^` should not be moved from the workspace to the staging area. It effectively excludes that file from being staged while allowing others to be added.
+This unusual notation instructs Git that the file following the negation operator `:^` should not be moved from the workspace to the staging area. It effectively excludes that file from being staged while allowing others to be added. 
+You will find more on this in the [[6 - Advanced topics]] course. 
+
+## Committing your changes 
+
+The next step following the previous Git commands is to commit your changes, preparing them to be pushed to the remote repository. To do this, you can run the following command:
+
+```sh 
+git commit [-m] "your commit message"
+```
+
+It is strongly recommended to include a commit message, as this helps you and your collaborators understand the changes made to the project. We will revisit this topic in a later section, specifically in [[7 - Git guidelines]].
+
+You are not required to use the `-m` option with the `git commit` command. Instead, you can run `git commit` without it, and a text editor of your choice will open, allowing you to write a more detailed commit message. Here's an example of what it might look like:
+
+![commit_message](./resources/commit_message.png)
