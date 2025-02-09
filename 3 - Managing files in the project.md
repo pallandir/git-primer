@@ -1,6 +1,6 @@
 ## Introduction
 
-As discussed in the first course, [[1 - As a beginning]],  you now have a clear understanding of the various stages involved in managing updates with Git. 
+As discussed in the first course, [[git primer/1 - As a beginning]],  you now have a clear understanding of the various stages involved in managing updates with Git. 
 During development, you may need to add, remove, or modify files within your local repository. Eventually, you will want to commit these changes to incorporate them into the project's official version, enabling other contributors to integrate them into their local repositories.
 
 ## Get project status
