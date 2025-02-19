@@ -12,6 +12,17 @@ git init
 git clone <remote-repository-url>
 ```
 
+## Configure Git
+
+```sh
+# Setup your username
+git config --global user.name "firstname lastname"
+```
+
+```sh
+# Setup your email (can be used by git)
+git config --global user.email "your email"
+```
 ## Setup and check remotes
 
 ```sh
@@ -20,18 +31,21 @@ git remote -v
 ```
 
 ```sh
-# Update a remote
-git remote set-url <remote-name> <remote-url>
+# Add a new remote
+git remote add <remote-name> <remote-url>
+#E.g git remote add https://github.com/pallandir/git-primer
 ```
 
 ```sh
-# Add a new remote
-git remote add <remote-name> <remote-url>
+# Update a remote
+git remote set-url <remote-name> <remote-url>
+# E.g git remote set-url origin https://github.com/pallandir/git-primer
 ```
 
 ```sh
 # Remove a remote
 git remote remove <remote-url>
+#E.g git remote remove origin
 ```
 ## Managing files
 
