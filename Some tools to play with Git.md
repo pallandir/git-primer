@@ -16,5 +16,5 @@ A set of exercises from beginner to advanced to learn to use Git.
 
 A conference about Git, commands tips and tricks.
  - [So you think you know git (part 1)](https://www.youtube.com/watch?v=aolI_Rz0ZqY)
- - [So you think you know git (part2)](https://www.youtube.com/watch?v=Md44rcw13k4)
+ - [So you think you know git (part 2)](https://www.youtube.com/watch?v=Md44rcw13k4)
 
