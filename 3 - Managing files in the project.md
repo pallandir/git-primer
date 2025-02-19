@@ -49,7 +49,6 @@ gitGraph
 	commit 
 	commit
 ```
-
 The next step following the previous Git commands is to commit your changes, preparing them to be pushed to the remote repository. To do this, you can run the following command:
 
 ```sh 

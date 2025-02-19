@@ -86,7 +86,7 @@ You can do it by running :
 git checkout <new-branch>
 ```
 
-An illustration of this action would look like this (after you added some commits on your new branch).
+An illustration of this action would look like this -after you added some commits on your new branch-.
 
 ```mermaid
 gitGraph
@@ -101,5 +101,33 @@ You can also create a branch and switch to it using this command :
 ```sh
 git checkout -b <new-branch>
 ```
+
+## Staying up to date
+
+When working on a project you will add some changes on your side but you will also likely be part of a bigger team that will also perform multiple modifications. In order to remain up to date with your project version you need to get the changes from your teammates into your local workspace / branch. 
+
+There are multiple way to get the changes from the remote. Here is a breakdown. 
+
+```sh 
+# Fetch changes from al branches configured on remote origin
+git fetch
+```
+
+Fetch command allows to get changes from all branches targeting the default remote 
+-usually origin- without modifying your working directory. It means that it will not merge automatically all the changes into your local branch. In order to integrate all the changes you will need to execute this command : 
+
+```sh
+git merge
+```
+
+The will perform global update on your local branch -ie integrating all branches of the remote-. Sometimes you will want to get the changes from only certain branches -and not all the features others people are working on-.
+In order to do so you can run this set if commands : 
+
+```sh
+git fetch <remote> <branch-name>
+# E.g git fetch origin main
+git merge origin/main
+```
+
 
 Next : [[3 - Managing files in the project]] 
