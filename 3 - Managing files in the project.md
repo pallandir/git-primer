@@ -3,7 +3,7 @@
 As discussed in the first course, [[git primer/1 - As a beginning]],  you now have a clear understanding of the various stages involved in managing updates with Git. 
 During development, you may need to add, remove, or modify files within your local repository. Eventually, you will want to commit these changes to incorporate them into the project's official version, enabling other contributors to integrate them into their local repositories.
 
-## Get project status
+## Check your status
 
 To track the changes made to your project, it’s essential to review the current status of your work. 
 Git provides a way to view the state of your project’s file structure and modifications. You can do this by running the following command:
@@ -41,7 +41,7 @@ git add . :^file_1 :^file_2
 This unusual notation instructs Git that the file following the negation operator `:^` should not be moved from the workspace to the staging area. It effectively excludes that file from being staged while allowing others to be added. 
 You will find more on this in the [[6 - Advanced topics]] course. 
 
-## Committing your changes 
+## Commit your changes 
 
 ```mermaid
 gitGraph 
@@ -62,7 +62,7 @@ You are not required to use the `-m` option with the `git commit` command. Inste
 ![commit_message](./resources/commit_message.png)
 
 
-## Resetting staged changes 
+## Reset unwanted staged changes 
 
 Sometimes, instead of committing your changes, you may want to reset them to continue working on them or remove them from the project entirely. To do this, you can run the following command:
 

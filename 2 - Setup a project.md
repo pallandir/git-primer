@@ -14,7 +14,7 @@ git init # Init a git repositoiry from a directory on your local machine
 git clone <remote-repository-url> # Clone a remote hosted git repository on your local machine
 ```
 
-##  Global configurations
+##  Global configuration
 
 Sometimes Git will also ask you more about yourself in order to configure your profile across all your repositories. 
 
@@ -30,7 +30,7 @@ To configure your contact email you can use this command :
 git config --global user.email "your email"
 ```
 
-## Checking your remotes
+## Check your remotes
 
 When setting up a new repository, you may also need to configure a remote. A remote is the URL of the repository hosted on your server. To enable Git to know where to send your project when you commit and push, you need to add a remote. 
 
@@ -51,7 +51,7 @@ git remotes -v # This will list all configured romote for your current repositor
 With Git, you can take your configuration even further by adding multiple remotes, enabling you to fetch or push code to various repositories or platforms. This approach allows you to back up your code across different platforms for example or facilitate resource sharing among multiple teams, making collaboration and redundancy more efficient.
 Looking for configured remotes is a good habit in order to check that you are interacting with the right repository and work with well configured remotes. 
 
-## Creating a branch
+## Create a branch
 
 ```mermaid
 gitGraph
@@ -102,7 +102,7 @@ You can also create a branch and switch to it using this command :
 git checkout -b <new-branch>
 ```
 
-## Staying up to date
+## Stay up to date
 
 ```mermaid
 gitGraph

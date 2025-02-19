@@ -33,7 +33,7 @@ git remote -v
 ```sh
 # Add a new remote
 git remote add <remote-name> <remote-url>
-#E.g git remote add https://github.com/pallandir/git-primer
+# E.g git remote add https://github.com/pallandir/git-primer
 ```
 
 ```sh
@@ -45,10 +45,10 @@ git remote set-url <remote-name> <remote-url>
 ```sh
 # Remove a remote
 git remote remove <remote-url>
-#E.g git remote remove origin
+# E.g git remote remove origin
 ```
 
-## Branching
+## Branches
 
 ```sh
 # Add a new branch
@@ -64,7 +64,31 @@ git checkout <new-branch>
 # Create and switch to a new branch
 git checkout -b <branch-name>
 ```
-## Managing files
+
+## Stay up to date
+
+```sh
+# Fetch changes from all branches of the remote -usually origin-
+git fetch
+```
+
+```sh
+# Merge all changes into your current branch
+git merge
+```
+
+```sh
+# Fetch changes from a specific branch of a remote
+git fetch <remote> <branch-name>
+# E.g git fetch origin main
+```
+
+```sh
+# Merge changes from a specific branch into your local branch
+git merge <remote/branch?
+# E.g git merge origin/main
+```
+## Manage files
 
 ```sh
 # Get the current status of your workspace files
@@ -88,7 +112,7 @@ git commit
 # And type your message in the opening text editor of your choice.
 ```
 
-## Pushing
+## Push
 
 ```sh
 # Push a branch already existing in the remote
