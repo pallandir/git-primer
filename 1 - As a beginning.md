@@ -1,4 +1,4 @@
-## About This 101
+## About this primer
 
 In professional development and large team projects, developers will inevitably rely on Version Control Systems (VCS). While these tools are powerful and significantly enhance productivity, their extensive features can sometimes feel overwhelming or intimidating.
 This Git primer guide serves as an introduction to Git commands, covering both beginner and advanced topics. Our goal is to help you feel confident and at ease when initializing, updating, or resolving conflicts in a project showing that Git is neither as complex nor as daunting as it may seem.
@@ -29,4 +29,4 @@ The third part of this architecture is your local clone of the repository (Calle
 
 Next : [[2 - Setup a project]]
 
-## Git History
+## Git history
