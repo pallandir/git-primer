@@ -4,10 +4,12 @@ You can start by experimenting with your own personal repository, where you can 
 
 [Git school](https://git-school.github.io/visualizing-git/)
 To visualize Git commands in a sandbox.
+
 With the repository of the project : [Git school repository](https://github.com/git-school/visualizing-git)
 
 [Git branching](https://learngitbranching.js.org/)
 A set of exercises from beginner to advanced to learn to use Git.
+
 With the repository of the project : [Git branching repository](https://github.com/pcottle/learnGitBranching)
 
 [So you think you know git (part 1)](https://www.youtube.com/watch?v=aolI_Rz0ZqY)
