@@ -85,7 +85,7 @@ git fetch <remote> <branch-name>
 
 ```sh
 # Merge changes from a specific branch into your local branch
-git merge <remote/branch?
+git merge <remote/branch>
 # E.g git merge origin/main
 ```
 ## Manage files
