@@ -17,7 +17,7 @@ git clone <remote-repository-url> # Clone a remote hosted git repository on your
 
 ##  Global configurations
 
-Sometimes git will also ask you more about yourself in order to configure your profile across all your repositories. 
+Sometimes Git will also ask you more about yourself in order to configure your profile across all your repositories. 
 
 To configure your username you can use this command :
 
