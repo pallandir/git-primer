@@ -49,5 +49,25 @@ git remote remove <remote-url>
 ```
 ## Managing files
 
+```sh
+# Get the current status of your workspace files
+git status
+```
 
+```sh
+# Move file(s) to staging area
+git add <file_name1> <file_name2>
+# Or add everything in your current directory
+git add . 
+```
+
+## Commits
+
+```sh
+# Commit changes to prepare them for push
+git commit -m "message"
+# Or
+git commit 
+# And type your message in the opening text editor of your choice
+```
 
