@@ -131,6 +131,7 @@ Fetch command allows to get changes from all branches targeting the default remo
 -usually origin- without modifying your working directory. It means that it will not merge automatically all the changes into your local branch. In order to integrate all the changes you will need to execute this command : 
 
 ```sh
+# Merge all changes from a remote to your local branch
 git merge
 ```
 
@@ -151,7 +152,7 @@ the difference can be explained by what is being targeted in the commands.
 This notation is used with `git fetch` / `git push` / `git pull` among others.
 
 `origin/main` target the state of the remote `main` branch (stored in your local copy as `origin/main`) into your current branch.
-This notation is used with `git merge` / `git rebase`
+This notation is used with `git merge` / `git rebase`.
 
 Here is a recap :
 
