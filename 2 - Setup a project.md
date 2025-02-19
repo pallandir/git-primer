@@ -1,4 +1,3 @@
-
 ## Where to start
 
 When starting a project with Git, you can approach it from various entry points. You might begin with a classic setup, such as creating an empty repository on GitHub or GitLab. Alternatively, you may already have a project on your local machine that you want to host on a remote repository. Another common scenario is joining an existing project hosted remotely. Lastly, you might have a project on your local machine and a separate repository on your hosting platform, requiring synchronization to align the two.
@@ -54,4 +53,44 @@ Looking for configured remotes is a good habit in order to check that you are in
 
 ## Creating a branch
 
-soon
+```mermaid
+gitGraph
+   commit
+   commit
+   branch develop
+   checkout develop
+   commit
+   commit
+   checkout main
+   merge develop
+   commit
+   commit
+
+```
+Branching is maybe the most important feature in Git. It allows you to create temporary workspace for a bug or a feature in your project that can later be merged to a bigger codebase to integrate your changes. 
+
+To create a new branch the command is : 
+
+```sh
+git branch <branch-name>
+```
+
+You will then need to move to this new branch in order to work on it. 
+You can do it by running : 
+
+```sh
+git checkout <new-branch>
+```
+
+An illustration of this action would look like this (after you added some commits on your new branch).
+
+```mermaid
+gitGraph
+   commit
+   branch develop
+   checkout develop
+   commit
+   commit
+```
+
+Next : [[3 - Managing files in the project]] 

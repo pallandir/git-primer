@@ -16,6 +16,7 @@ Git is primarily accessed through a command-line interface (CLI), which provides
 
 Before diving into commands and setup it's important to understand how Git works and what defines this tool.
 You can refer at the diagram underneath to better visualize the different steps that will be involved while you track your files in a project.
+
 ![git areas|634](./resources/git_areas.png)
 
 The first component of this architecture is the workspace. It's the place where your project lives locally. the place where you will be able to create, edit or delete any file. `Any files here are not tracked by git if you didn't add them before`.
@@ -25,5 +26,7 @@ The second component is the staging area. Every files `added` here are tracked b
 The third part of this architecture is your local clone of the repository (Called local repository). Files sent there doesn't not appear anymore into the staging area and are ready to be pushed to your remote repository. It's one of the last step before your content is delivered to the server and made available for other contributors.
 
 > the next section is about Git history, it's not mandatory to read it. It's just for common culture.
+
+Next : [[2 - Setup a project]]
 
 ## Git History

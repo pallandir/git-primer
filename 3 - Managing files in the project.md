@@ -43,6 +43,13 @@ You will find more on this in the [[6 - Advanced topics]] course.
 
 ## Committing your changes 
 
+```mermaid
+gitGraph 
+	commit 
+	commit 
+	commit
+```
+
 The next step following the previous Git commands is to commit your changes, preparing them to be pushed to the remote repository. To do this, you can run the following command:
 
 ```sh 
@@ -69,3 +76,5 @@ This will remove the specified file from the staging area. Alternatively, you ca
 > Note : This command will simply remove the files from the staging area and place them back in your workspace. All your changes will remain intact, and you'll be able to continue working on them without losing any progress.
 
 The `reset` command can be quite complex, as it allows you to perform various actions that can significantly impact your work. We will explore these advanced features in more detail in [[6 - Advanced topics]]
+
+Next : [[4 - Commands recap]]

@@ -99,3 +99,5 @@ git push
 # Push a branch non exising in the remote
 git push --set-upstream origin <branch-name>
 ```
+
+Next : [[5 - Recover from errors]]
