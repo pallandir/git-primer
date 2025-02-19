@@ -69,6 +69,10 @@ gitGraph
 ```
 Branching is maybe the most important feature in Git. It allows you to create temporary workspace for a bug or a feature in your project that can later be merged to a bigger codebase to integrate your changes. 
 
+From Git [documentation](https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell) you can read : 
+
+_“ Branching means you diverge from the main line of development and continue to do work without messing with that main line.”_
+
 To create a new branch the command is : 
 
 ```sh
@@ -91,6 +95,11 @@ gitGraph
    checkout develop
    commit
    commit
+```
+You can also create a branch and switch to it using this command : 
+
+```sh
+git checkout -b <new-branch>
 ```
 
 Next : [[3 - Managing files in the project]] 
