@@ -104,6 +104,20 @@ git checkout -b <new-branch>
 
 ## Staying up to date
 
+```mermaid
+gitGraph
+commit
+branch develop
+checkout develop
+commit
+commit
+commit
+checkout main
+commit
+checkout develop
+merge main
+```
+
 When working on a project you will add some changes on your side but you will also likely be part of a bigger team that will also perform multiple modifications. In order to remain up to date with your project version you need to get the changes from your teammates into your local workspace / branch. 
 
 There are multiple way to get the changes from the remote. Here is a breakdown. 
