@@ -47,6 +47,23 @@ git remote set-url <remote-name> <remote-url>
 git remote remove <remote-url>
 #E.g git remote remove origin
 ```
+
+## Branching
+
+```sh
+# Add a new branch
+git branch <branch-name>
+```
+
+```sh
+# Switch from one branch to another
+git checkout <new-branch>
+```
+
+```sh
+# Create and switch to a new branch
+git checkout -b <branch-name>
+```
 ## Managing files
 
 ```sh
@@ -68,6 +85,17 @@ git add .
 git commit -m "message"
 # Or
 git commit 
-# And type your message in the opening text editor of your choice
+# And type your message in the opening text editor of your choice.
 ```
 
+## Pushing
+
+```sh
+# Push a branch already existing in the remote
+git push
+```
+
+```sh
+# Push a branch non exising in the remote
+git push --set-upstream origin <branch-name>
+```
