@@ -126,8 +126,26 @@ In order to do so you can run this set if commands :
 ```sh
 git fetch <remote> <branch-name>
 # E.g git fetch origin main
-git merge origin/main
+git merge <remote/branch>
+# E.g git merge origin/main
 ```
+
+Notice, in the previous commands, the two different notations `origin main` and `origin/main`.
+
+the difference can be explained by what is being targeted in the commands. 
+`origin main` fetches the latest updates from the `main` branch on the `origin` remote.
+This notation is used with `git fetch` / `git push` / `git pull` among others.
+
+`origin/main` target the state of the remote `main` branch (stored in your local copy as `origin/main`) into your current branch.
+This notation is used with `git merge` / `git rebase`
+
+Here is a recap :
+
+| Concept        | `origin main`                 | `origin/main`                 |
+|---------------|--------------------------------|--------------------------------|
+| **Type**      | Remote + Branch               | Remote-tracking branch (local) |
+| **Usage**     | With `git fetch` / `git push` | With `git merge` / `git rebase` |
+| **Purpose**   | Fetch/push to remote branch   | Reference to remote branch state |
 
 
 Next : [[3 - Managing files in the project]] 
