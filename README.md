@@ -5,7 +5,7 @@
 <a href="https://leetcode.com">
     <img src="./resources/git.svg" alt="Logo" width="80" height="80">
   </a>
-  <h3 align="center">A brief debunk of git</h3>
+  <h3 align="center">A brief debunk of Git</h3>
 
   <p align="center">
     Master Git and use it like a pro in your projects
