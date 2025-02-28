@@ -53,10 +53,10 @@ This guide is your go-to introduction to Git, covering both beginner and advance
 5. [Remote Repositories](5.%20Remote%20Repositories.md)
    - Connecting to a remote (git remote add)
    - Pushing changes (git push)
-   - Pulling updates (git pull)
    - Fetching changes (git fetch)
+   - Pulling updates (git pull)
    - Forking and contributing to open-source projects
-6. Undoing Changes & Resetting History
+6. [Undoing Changes & Resetting History](6.%20Undoing%20Changes%20&%20Resetting%20History.md)
    - Discarding local changes (git restore, git checkout)
    - Unstaging files (git reset HEAD)
    - Amending commits (git commit --amend)
