@@ -62,7 +62,7 @@ This guide is your go-to introduction to Git, covering both beginner and advance
    - Amending commits (git commit --amend)
    - Reverting commits (git revert)
    - Reset vs. Revert vs. Checkout
-7. Understanding Git Internals
+7. [Understanding Git Internals](7.%20Understanding%20Git%20Internals.md)
    - The Git object model (blobs, trees, commits)
    - How Git stores changes (snapshots vs. diffs)
    - Git references (HEAD, refs, tags)
