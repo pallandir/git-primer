@@ -84,7 +84,7 @@ This guide is your go-to introduction to Git, covering both beginner and advance
     - Dealing with merge conflicts
     - Resolving git push and git pull errors
     - Diagnosing issues with git fsck and git gc
-12. Working with Submodules & Large Repositories
+12. [Working with Submodules & Large Repositories](12.%20Working%20with%20Submodules%20&%20Large%20Repositories.md)
     - Using submodules (git submodule)
     - Handling large files with Git LFS
     - Optimizing repository performance
