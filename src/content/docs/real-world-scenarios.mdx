@@ -1,0 +1,113 @@
+---
+title: 14. Real-World Git Scenarios
+description: Collaborate in a team, handle hotfixes and releases, and recover from common mistakes.
+---
+
+## Real-World Git Scenarios
+
+You've now seen every command this course set out to teach. The final step is putting them together the way you will in a real job, where the question is never "what does `git rebase` do?" but "my teammate just pushed over my work, what now?". This chapter walks through the situations you'll actually face, tying together everything from the previous chapters.
+
+## Collaborating in a team
+
+Working alone, you can push to `main` whenever you like. On a team, that quickly becomes chaos. The shared discipline that keeps everyone sane looks like this:
+
+1. **Start from the latest code.** Before creating a branch, sync your local `main`:
+
+   ```sh
+   git switch main
+   git pull
+   ```
+
+2. **Work on a branch, never directly on `main`.** Give it a descriptive name:
+
+   ```sh
+   git switch -c feature/user-profile
+   ```
+
+3. **Commit small, push early.** Push your branch so teammates can see it and so your work is backed up:
+
+   ```sh
+   git push -u origin feature/user-profile
+   ```
+
+4. **Open a pull request and let it be reviewed.** This is where the platform features from [Chapter 13](/git-primer/other-tools/) come in.
+
+5. **Keep your branch fresh.** If `main` moves while you work, bring those changes into your branch regularly so the eventual merge is painless:
+
+   ```sh
+   git switch feature/user-profile
+   git merge main          # or: git rebase main
+   ```
+
+:::tip
+The number one cause of merge pain is letting a branch live for weeks without syncing. Short-lived branches that integrate often almost never produce big, scary conflicts.
+:::
+
+### "We both edited the same file"
+
+This is the everyday team conflict, and you're already equipped for it. When your pull request reports a conflict, sync `main` into your branch locally, resolve the conflict markers as we did in [Chapter 4](/git-primer/branches/), commit, and push. The pull request updates itself.
+
+## Handling hotfixes and release branches
+
+Imagine production is broken **right now**, but `main` already contains half-finished features that aren't ready to ship. You can't just deploy the latest code. This is the classic hotfix scenario.
+
+The pattern is to branch the fix off the **last released, stable point** rather than off the current development tip:
+
+```sh
+# Branch from the production tag or main, depending on your workflow
+git switch -c hotfix/payment-crash v2.3.1
+# ... make the minimal fix ...
+git commit -m "fix: prevent crash when payment token is missing"
+git push -u origin hotfix/payment-crash
+```
+
+Once reviewed, you merge the hotfix into production and **also** bring it back into your development line so the bug doesn't reappear in the next release. If the fix landed first on the release branch, the [`git cherry-pick`](/git-primer/advanced-commands/) command is the perfect tool to copy that single commit over to `main`:
+
+```sh
+git switch main
+git cherry-pick <hotfix-commit-hash>
+```
+
+**Release branches** follow a similar idea. When you're preparing a version to ship, you cut a `release/2.4` branch, stop adding new features to it, and only allow bug fixes and final polish. Meanwhile, `main` keeps moving with new work. When the release is ready, you tag it (from [Chapter 7](/git-primer/internals/)):
+
+```sh
+git tag -a v2.4.0 -m "Release 2.4.0"
+git push origin --tags
+```
+
+## Recovering from mistakes
+
+Everyone makes mistakes in Git. What separates a calm developer from a panicked one is knowing that **almost everything is recoverable**. Here's a quick-reference rescue table pulling together the tools from across this course.
+
+| "Oh no, I..."                                  | The rescue                                                        |
+| ---------------------------------------------- | ----------------------------------------------------------------- |
+| ...edited a file and want the original back     | `git restore <file>` ([Ch. 6](/git-primer/undoing-changes/))      |
+| ...staged a file by accident                    | `git restore --staged <file>` ([Ch. 6](/git-primer/undoing-changes/)) |
+| ...wrote a bad commit message                   | `git commit --amend` ([Ch. 6](/git-primer/undoing-changes/))      |
+| ...committed too early and need to add a file   | `git commit --amend --no-edit` ([Ch. 6](/git-primer/undoing-changes/)) |
+| ...need to undo a commit that's already pushed  | `git revert <hash>` ([Ch. 6](/git-primer/undoing-changes/))       |
+| ...reset hard and lost commits                  | `git reflog` then `git reset --hard HEAD@{n}` ([Ch. 8](/git-primer/advanced-commands/)) |
+| ...committed on a detached HEAD                 | `git switch -c rescue-branch` ([Ch. 11](/git-primer/troubleshooting/)) |
+| ...committed to the wrong branch                | `git cherry-pick` it to the right one, then reset the wrong one ([Ch. 8](/git-primer/advanced-commands/)) |
+| ...committed a secret                           | Rotate it immediately, then scrub history ([Ch. 6](/git-primer/undoing-changes/), [Ch. 10](/git-primer/best-practices/)) |
+
+### Worked example: "I committed to main by mistake"
+
+You meant to work on a branch, but you've made two commits straight onto `main`. Here's the calm fix:
+
+```sh
+# Create a branch that keeps your two commits exactly where they are
+git switch -c feature/where-this-belongs
+
+# Move main back to before your commits (it still has them via the new branch)
+git switch main
+git reset --hard HEAD~2
+```
+
+Your work is safe on `feature/where-this-belongs`, and `main` is clean again. Because you understand what `reset` and `switch` actually do, a situation that looks alarming becomes three short commands.
+
+## Where to go from here
+
+You started this course thinking Git might be intimidating, and you've ended it recovering lost commits and designing branching strategies. That's real growth. 🎉
+
+The last and most important step is **practice**. Git only becomes second nature when your fingers know it, so head over to the [Learning resources](/git-primer/resources/) chapter for sandboxes and exercises, then go break things in a test repository. You now have the knowledge to fix anything you break, which is exactly the confidence a good developer needs.

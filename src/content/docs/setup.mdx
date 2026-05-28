@@ -1,0 +1,101 @@
+---
+title: 2. Setting Up a Git Repository
+description: Initialize and clone repositories, and understand what lives inside the .git folder.
+---
+
+## Initializing a repository (git init)
+
+When starting a project with Git, there are various ways to begin, depending on your situation. You could for example:
+
+- **Create an empty repository:** the classic setup where you start from scratch, either on GitHub, GitLab, or another platform.
+- **Initialize a local project:** if you already have a project on your local machine, you can easily turn it into a Git repository and push it to a remote hosting platform.
+- **Join an existing project:** if you're joining a team or contributing to an open-source project, you can clone a remote repository to your local machine.
+- **Sync a local project with a remote:** if your project exists locally and you have a remote repository, you can set up Git to link the two, allowing synchronization.
+
+While these scenarios may seem different, the core methodology remains the same, and you can follow a consistent flow regardless of the entry point.
+
+When starting a new Git project on your local machine, you can initialize a repository with the following command:
+
+```sh
+git init # Init a git repository from a directory on your local machine
+```
+
+This command initializes a new Git repository in the current directory. It creates a hidden `.git` folder that contains all the information Git needs to manage version history for the project. This includes metadata like the current active branch, repository configuration, and other important files necessary for Git operations.
+
+Once you've initialized the repository, you can start adding files, making commits, and setting up remotes.
+
+## Cloning a repository (git clone)
+
+If you want to contribute to an existing project or work on a project that already has a remote repository, you can clone the repository to your local machine:
+
+```sh
+git clone <remote-repository-url> # Clone a remote hosted git repository on your local machine
+```
+
+This command will create a local copy of the remote repository, including all files, commit history, and configuration. It also sets up the remote `origin`, so you can easily fetch, pull, and push changes back to the remote repository. This is commonly used when starting to work on an open-source project or collaborating with a team.
+
+## Understanding the .git folder
+
+After running the `git init` command, Git will create a hidden `.git` directory, which contains all the metadata and version history for your repository. The structure looks like this:
+
+```
+.git
+├── hooks/
+├── info/
+├── logs/
+├── objects/
+├── refs/
+├── COMMIT_EDITMSG
+├── config
+├── description
+├── FETCH_HEAD
+├── HEAD
+├── index
+└── ORIG_HEAD
+```
+
+Let's break down the most important files and directories.
+
+### Objects
+
+The `objects/` directory stores snapshots of your file system in a key-value format. A Git object can be one of the following types:
+
+- **Blob:** represents file contents.
+- **Tree:** represents a directory structure.
+- **Commit:** points to a tree and contains metadata (author, message, timestamp).
+- **Tag:** a reference to a commit (often used for versioning).
+
+Git's entire version history is stored as objects in this directory. We'll explore exactly how these fit together in [Chapter 7](/git-primer/internals/).
+
+### Config
+
+The `config` file contains the repository-specific Git settings. This includes:
+
+- User information (name & email)
+- Default branch
+- Remote repository details
+- Custom settings like line endings and aliases
+
+This file is similar to the global Git configuration (`~/.gitconfig`), but it only applies to the current repository.
+
+### HEAD
+
+The `HEAD` file tracks the currently active branch. In most cases, it points to the latest commit of the active branch:
+
+```sh
+ref: refs/heads/main
+```
+
+:::note
+Sometimes, `HEAD` points to a specific commit instead of a branch. This is called a **detached HEAD** state, which allows you to inspect old commits or test changes without modifying the branch. We cover how to handle it in [Chapter 11](/git-primer/troubleshooting/).
+:::
+
+### Refs
+
+The `refs/` directory stores pointers (references) to Git objects, which help keep track of different parts of the repository. It includes:
+
+- `refs/heads/` → tracks all branches in the repository.
+- `refs/tags/` → stores tags (named commits).
+- `refs/remotes/` → tracks remote branches.
+
+These references allow Git to efficiently manage versions and branches.

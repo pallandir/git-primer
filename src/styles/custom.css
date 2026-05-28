@@ -1,0 +1,88 @@
+/* Git-flavoured palette, built around the Git brand orange (#f05133). */
+:root {
+  --sl-color-accent-low: #3a1107;
+  --sl-color-accent: #f05133;
+  --sl-color-accent-high: #ffc4b8;
+  --git-orange: #f05133;
+  --git-orange-soft: #f8825f;
+}
+
+:root[data-theme="light"] {
+  --sl-color-accent-low: #ffe2da;
+  --sl-color-accent: #d83a1f;
+  --sl-color-accent-high: #7a1c0c;
+}
+
+/* Hero tweaks on the splash landing page. */
+.hero h1 {
+  background: linear-gradient(
+    120deg,
+    var(--git-orange),
+    var(--git-orange-soft)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Shared frame for the interactive/animated demo components. */
+.git-demo {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.75rem;
+  background: var(--sl-color-black);
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+  overflow: hidden;
+}
+
+.git-demo__bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.git-demo__btn {
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-gray-6);
+  color: var(--sl-color-white);
+  padding: 0.35rem 0.8rem;
+  border-radius: 0.5rem;
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease,
+    background 0.12s ease;
+}
+
+.git-demo__btn:hover:not(:disabled) {
+  border-color: var(--git-orange);
+  transform: translateY(-1px);
+}
+
+.git-demo__btn--primary {
+  background: var(--git-orange);
+  border-color: var(--git-orange);
+  color: #fff;
+  font-weight: 600;
+}
+
+.git-demo__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.git-demo__caption {
+  font-size: 0.85rem;
+  color: var(--sl-color-gray-3);
+  margin-top: 0.75rem;
+  min-height: 1.4em;
+}
+
+.git-demo__hint {
+  font-size: 0.75rem;
+  color: var(--sl-color-gray-4);
+}

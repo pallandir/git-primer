@@ -1,0 +1,219 @@
+---
+title: 4. Working with Branches
+description: Create, switch, merge, and delete branches, and resolve merge conflicts with confidence.
+---
+
+import BranchMerge from '../../components/BranchMerge.svelte';
+import ConflictResolver from '../../components/ConflictResolver.svelte';
+
+## What are branches? Why use them?
+
+Branching is one of Git's most powerful features. It allows you to create a separate workspace where you can experiment, develop new features, or fix bugs without affecting the main project.
+
+From the official Git [documentation](https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell):
+
+> "Branching means you diverge from the main line of development and continue to do work without messing with that main line."
+
+With branches, you can:
+
+- Work on new features without disrupting the stable version of your project.
+- Fix bugs without interfering with ongoing development.
+- Experiment safely, knowing you can switch back to a previous state anytime.
+
+Step through a full branch-and-merge cycle below:
+
+<BranchMerge client:visible />
+
+To list existing branches you can execute:
+
+```sh
+git branch
+```
+
+You can also check the branches on the remote with:
+
+```sh
+git branch -r
+```
+
+Or view all branches from local and remote:
+
+```sh
+git branch -a
+```
+
+## Creating and switching branches
+
+### Creating a new branch
+
+To create a new branch the command is:
+
+```sh
+git branch feature
+```
+
+This creates a new branch called `feature`, but you will remain on your current branch.
+
+To create a branch and switch to it directly:
+
+```sh
+git checkout -b feature
+```
+
+And this is the modern alternative to checkout:
+
+```sh
+git switch -c feature
+```
+
+### Switching to an existing branch
+
+To move between branches:
+
+```sh
+git checkout feature
+```
+
+Or using the modern way:
+
+```sh
+git switch feature
+```
+
+## Merging branches (git merge)
+
+Once your feature is complete, you'll want to integrate it into the main line of development (typically the **main** or **develop** branch). Merging allows you to combine changes from different branches into a single branch.
+
+### Steps to merge a branch
+
+1 - Switch to the target branch (usually main or develop):
+
+```sh
+git switch main
+```
+
+2 - Merge the feature branch into the current branch:
+
+```sh
+git merge feature
+```
+
+If the branches have diverged significantly, Git might encounter merge conflicts. In that case, you'll need to manually resolve conflicts before completing the merge.
+
+## Resolving merge conflicts
+
+A merge conflict happens when two branches changed the **same lines of the same file** in different ways, and Git cannot decide on its own which version to keep. This is not an error you did something wrong, it's just Git asking for your help to make a decision.
+
+Try resolving one yourself. Pick which side to keep and watch Git clean up the markers:
+
+<ConflictResolver client:visible />
+
+When a conflict occurs, Git pauses the merge and tells you exactly which files are affected:
+
+```sh
+git merge feature
+```
+
+```
+Auto-merging app.js
+CONFLICT (content): Merge conflict in app.js
+Automatic merge failed; fix conflicts and then commit the result.
+```
+
+You can always check which files are still in conflict with:
+
+```sh
+git status
+```
+
+### Reading the conflict markers
+
+Open the conflicted file and you'll find Git has inserted special markers around the disputed section:
+
+```js
+<<<<<<< HEAD
+const greeting = "Hello team";
+=======
+const greeting = "Hello world";
+>>>>>>> feature
+```
+
+Here is how to read them:
+
+- Everything between `<<<<<<< HEAD` and `=======` is the version from **your current branch** (the one you merged into).
+- Everything between `=======` and `>>>>>>> feature` is the version coming from the **branch you are merging in** (here, `feature`).
+
+Your job is to edit the file so it contains the final version you want, then remove all three markers (`<<<<<<<`, `=======`, `>>>>>>>`). You can keep one side, keep the other, or combine them.
+
+### Finishing the merge
+
+Once you've cleaned up every conflicted file, stage them to tell Git the conflict is resolved, then commit to complete the merge:
+
+```sh
+git add app.js
+git commit
+```
+
+Git already prepares a merge commit message for you, so in most cases you can just save and close the editor.
+
+:::tip
+Most modern editors (VS Code, JetBrains IDEs) highlight conflict markers and give you clickable buttons like _Accept Current_, _Accept Incoming_, or _Accept Both_. They edit the same markers under the hood, so it's worth understanding the raw format first.
+:::
+
+### Aborting a merge
+
+If things get messy and you'd rather start over, you can cancel the merge entirely and return to the state before you started:
+
+```sh
+git merge --abort
+```
+
+This restores your branch to exactly how it was before the merge, with no changes applied. Nothing is lost, so don't hesitate to use it when in doubt.
+
+## Deleting branches
+
+After merging your changes into the main branch, the feature branch is no longer needed and can be deleted to keep your repository clean.
+
+### Delete a local branch
+
+To delete a local branch after merging:
+
+```sh
+git branch -d feature
+```
+
+However, if the branch contains unmerged changes, Git will prevent its deletion to avoid accidental data loss. If you are sure you want to forcefully delete the branch:
+
+```sh
+git branch -D feature
+```
+
+### Deleting a remote branch
+
+If you want to delete a branch on the remote you can execute:
+
+```sh
+git push origin --delete feature
+```
+
+Alternatively, you can use:
+
+```sh
+git fetch -p  # Prune deleted remote branches from local references
+```
+
+This helps keep your local references clean after deleting remote branches.
+
+## Summary
+
+| Command                                | Description                            |
+| -------------------------------------- | -------------------------------------- |
+| `git branch`                           | List local branches                    |
+| `git branch -a`                        | List all branches (local & remote)     |
+| `git branch new-branch`                | Create a new branch                    |
+| `git switch new-branch`                | Switch to an existing branch           |
+| `git checkout -b new-branch`           | Create and switch to a new branch      |
+| `git merge branch-name`                | Merge a branch into the current branch |
+| `git branch -d branch-name`            | Delete a branch (only if merged)       |
+| `git branch -D branch-name`            | Force delete a branch                  |
+| `git push origin --delete branch-name` | Delete a remote branch                 |

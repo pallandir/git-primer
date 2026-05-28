@@ -1,0 +1,180 @@
+---
+title: 8. Advanced Git Commands
+description: Interactive rebase, the reflog safety net, cherry-picking, and stashing work in progress.
+---
+
+import RebaseDemo from '../../components/RebaseDemo.svelte';
+import CherryPick from '../../components/CherryPick.svelte';
+import StashDemo from '../../components/StashDemo.svelte';
+
+## Advanced Git Commands
+
+Now that you're comfortable with the everyday workflow, let's look at the commands that make you feel like you truly own your history. These tools are powerful, and a few of them rewrite history, so keep in mind the golden rule: **don't rewrite history that has already been shared with others.**
+
+## Interactive rebasing (git rebase -i)
+
+Rebasing is a way to move or reshape a series of commits. Watch how a rebase replays your feature commits on top of the latest `main`:
+
+<RebaseDemo client:visible />
+
+The interactive mode (`-i`) is especially useful for cleaning up your local history before sharing it: squashing tiny "fix typo" commits, reordering work, or rewriting messages so your branch tells a clear story.
+
+To start an interactive rebase over your last few commits, count how many commits back you want to edit and use `HEAD~n`:
+
+```sh
+git rebase -i HEAD~3
+```
+
+Git opens an editor listing those commits, oldest at the top, each with a command in front of it:
+
+```
+pick a1b2c3d Add login form
+pick d4e5f6a Fix typo in label
+pick 7g8h9i0 Add form validation
+```
+
+You change the word in front of each commit to tell Git what to do:
+
+| Command          | What it does                                            |
+| ---------------- | ------------------------------------------------------- |
+| `pick`           | Keep the commit as is                                   |
+| `reword`         | Keep the commit but edit its message                    |
+| `edit`           | Pause to amend the commit's content                     |
+| `squash` / `s`   | Merge into the previous commit, combining messages      |
+| `fixup` / `f`    | Like squash, but discard this commit's message          |
+| `drop`           | Delete the commit entirely                              |
+
+For example, to fold the typo fix into the commit before it, you'd write:
+
+```
+pick a1b2c3d Add login form
+fixup d4e5f6a Fix typo in label
+pick 7g8h9i0 Add form validation
+```
+
+Save and close the editor, and Git replays the commits according to your instructions, producing a cleaner history.
+
+:::caution
+Interactive rebase **rewrites commit hashes**. Use it freely on your local, unpushed work. If you've already pushed the branch, rebasing means you'll need a force push, which can disrupt teammates. Prefer `--force-with-lease` over `--force` in that case, as it refuses to overwrite work you haven't seen yet.
+:::
+
+### Rebase vs. merge
+
+Both integrate changes from one branch into another, but they tell different stories:
+
+- `git merge` preserves the exact history and adds a merge commit. It's honest about what happened but can get noisy.
+- `git rebase` replays your commits on top of another branch, producing a straight, linear history as if you'd started from the latest code.
+
+Neither is "correct," it's a team preference. Many teams rebase their feature branches to stay current, then merge into main.
+
+## Reflog and recovering lost commits (git reflog)
+
+Here's a reassuring secret: in Git, it's surprisingly hard to truly lose work. Even after a "bad" reset or a rebase gone wrong, your old commits usually still exist, they just aren't reachable by any branch anymore. The **reflog** is your safety net.
+
+The reflog records every move `HEAD` makes: every commit, checkout, reset, merge, and rebase. To see it:
+
+```sh
+git reflog
+```
+
+You'll get something like:
+
+```
+e98d9c8 HEAD@{0}: reset: moving to HEAD~1
+8f0cd01 HEAD@{1}: commit: Add form validation
+299a903 HEAD@{2}: commit: Fix typo in label
+```
+
+Imagine you ran `git reset --hard HEAD~1` and panicked because a commit vanished. You can see in the reflog exactly where `HEAD` was just before, and jump back to it:
+
+```sh
+git reset --hard HEAD@{1}
+```
+
+Or, if you'd rather bring the lost commit back as a new branch without touching your current one:
+
+```sh
+git branch recovered 8f0cd01
+```
+
+:::tip
+The reflog is **local to your machine** and entries expire after a while (90 days by default). It's a recovery tool for your own mistakes, not a backup of the remote. Still, it has saved countless developers from despair.
+:::
+
+## Cherry-picking commits (git cherry-pick)
+
+Sometimes you want just **one specific commit** from another branch, not the whole branch. A classic example: a bug was fixed on `main`, and you need that same fix on a release branch without merging everything else.
+
+That's what cherry-picking does. Press the button to copy a single commit across branches:
+
+<CherryPick client:visible />
+
+Find the commit hash you want (with `git log`), then:
+
+```sh
+git cherry-pick <commit-hash>
+```
+
+Git takes the changes from that commit and applies them as a brand new commit on your current branch. You can pick several at once:
+
+```sh
+git cherry-pick <hash1> <hash2> <hash3>
+```
+
+If the commit doesn't apply cleanly, you'll get a conflict to resolve, just like a merge. Fix the files, stage them, and continue:
+
+```sh
+git add <resolved-files>
+git cherry-pick --continue
+```
+
+Or back out entirely:
+
+```sh
+git cherry-pick --abort
+```
+
+:::note
+Cherry-picking duplicates the change as a new commit with a new hash. It's perfect for targeted fixes, but if you find yourself cherry-picking lots of commits between the same two branches, a merge or rebase is usually the cleaner choice.
+:::
+
+## Stashing work (git stash)
+
+You're in the middle of something, your files are half-edited, and suddenly you need to switch branches to handle an urgent fix. You don't want to commit unfinished work, but Git won't let you switch with a messy working directory. This is exactly what `git stash` is for.
+
+Watch your changes get tucked away and then restored:
+
+<StashDemo client:visible />
+
+Stashing tucks your uncommitted changes away safely and gives you a clean working directory:
+
+```sh
+git stash
+```
+
+Your changes are now saved on a stack, and your working directory matches the last commit. Go do your urgent work, switch branches freely, then come back and restore your changes:
+
+```sh
+git stash pop
+```
+
+`pop` applies your most recent stash and removes it from the stack. If you'd rather keep the stash around after applying it, use `git stash apply` instead.
+
+A few useful variations:
+
+```sh
+git stash list            # See everything you've stashed
+git stash save "message"  # Stash with a descriptive label
+git stash drop            # Delete the latest stash
+git stash clear           # Delete all stashes
+```
+
+By default, `git stash` only saves tracked files. If you also want to include new, untracked files, add the `-u` flag:
+
+```sh
+git stash -u
+```
+
+:::tip
+Think of the stash as a clipboard for work in progress. It's a quick, local convenience, not a place to store work long term. For anything you want to keep, make a commit on a branch instead.
+:::

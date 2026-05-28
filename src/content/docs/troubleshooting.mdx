@@ -1,0 +1,146 @@
+---
+title: 11. Troubleshooting & Debugging Git Issues
+description: Fix detached HEAD, survive conflicts, resolve push/pull errors, and use fsck and gc.
+---
+
+## Troubleshooting & Debugging Git Issues
+
+Sooner or later Git will show you a scary-looking message, and your first instinct might be to panic. Don't. Almost every Git "disaster" is recoverable, and most error messages are actually telling you precisely how to fix them. This chapter walks through the situations you'll hit most often.
+
+## Fixing detached HEAD state
+
+We met `HEAD` in [Chapter 7](/git-primer/internals/): normally it points to a branch. Sometimes, though, you check out a specific commit or tag directly:
+
+```sh
+git checkout a1b2c3d
+```
+
+Git warns you that you're now in a **detached HEAD** state:
+
+```
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them...
+```
+
+This isn't an error. It just means `HEAD` is pointing straight at a commit instead of a branch. You can look around freely. The danger is only if you **make new commits** here: because no branch points to them, they can be lost once you switch away.
+
+If you just wanted to inspect things, simply go back to your branch:
+
+```sh
+git switch main
+```
+
+If you made commits you want to keep, create a branch from where you are **before** switching away:
+
+```sh
+git switch -c my-rescued-work
+```
+
+Now those commits live on a real branch and are safe. (And if you already switched away and panicked, remember the reflog from [Chapter 8](/git-primer/advanced-commands/) can bring them back.)
+
+## Dealing with merge conflicts
+
+We covered the mechanics of resolving conflicts in [Chapter 4](/git-primer/branches/), so here's a quick troubleshooting checklist for when you're stuck mid-conflict and unsure what to do:
+
+```sh
+git status        # Which files are still in conflict?
+git diff          # What exactly is disputed?
+```
+
+- To accept **your** branch's version of a file wholesale: `git checkout --ours <file>`
+- To accept the **incoming** branch's version: `git checkout --theirs <file>`
+- After editing a file by hand, mark it resolved with `git add <file>`.
+- To bail out completely and pretend the merge never started: `git merge --abort`.
+
+:::tip
+The single most common cause of "endless" conflicts is letting branches drift far apart. Merging or rebasing `main` into your feature branch often keeps each conflict small and easy.
+:::
+
+## Resolving git push and git pull errors
+
+These two commands produce the errors people search for most. The good news: the messages are usually self-explanatory once you know what they mean.
+
+### "Updates were rejected because the remote contains work you do not have"
+
+```
+! [rejected]        main -> main (fetch first)
+error: failed to push some refs to '...'
+```
+
+This means someone pushed to the remote since you last synced. Git is protecting you from overwriting their work. The fix is to bring their changes in first, then push:
+
+```sh
+git pull --rebase
+git push
+```
+
+:::caution
+It's tempting to "solve" this with `git push --force`, but that overwrites your teammate's commits. Almost never do this on a shared branch. If you genuinely must force (for example after an intentional rebase of your own branch), use the safer `git push --force-with-lease`, which refuses to clobber work you haven't seen.
+:::
+
+### "The current branch has no upstream branch"
+
+```
+fatal: The current branch feature has no upstream branch.
+```
+
+Git doesn't know where to push because the branch isn't linked to a remote one yet. Set it up while pushing:
+
+```sh
+git push -u origin feature
+```
+
+### "Your local changes would be overwritten by merge"
+
+```
+error: Your local changes to the following files would be overwritten by merge
+```
+
+A `git pull` can't proceed because you have uncommitted edits that conflict. You have two clean options: commit your work, or stash it (from [Chapter 8](/git-primer/advanced-commands/)) and reapply it afterward:
+
+```sh
+git stash
+git pull
+git stash pop
+```
+
+## Diagnosing issues with git fsck and git gc
+
+When you suspect something is genuinely wrong with the repository itself (not just your workflow), Git has two low-level tools to inspect and tidy its internal database.
+
+### git fsck
+
+`fsck` stands for "file system check." It verifies the integrity of every object in your repository and reports anything broken or orphaned:
+
+```sh
+git fsck --full
+```
+
+Beyond catching corruption, it has a wonderful side effect: it lists **dangling commits**, commits that aren't reachable from any branch or tag. If you've truly lost a commit and the reflog didn't help, `git fsck` may surface it so you can recover it:
+
+```sh
+git fsck --lost-found
+```
+
+### git gc
+
+`gc` ("garbage collection"), which we introduced in [Chapter 12](/git-primer/submodules-large-repos/), compresses loose objects and removes ones that are no longer needed. Run it when your repository feels bloated or sluggish:
+
+```sh
+git gc
+```
+
+:::caution
+Because `git gc` permanently prunes unreachable objects, run any recovery you need (reflog, `fsck --lost-found`) **before** garbage collecting. Once `gc` removes a dangling commit, it's gone for good.
+:::
+
+## A calm troubleshooting mindset
+
+Whenever Git surprises you, work through these steps before doing anything drastic:
+
+1. **Read the message slowly.** Git usually suggests the exact command to run next.
+2. **Run `git status`.** It tells you where you are and what state you're in.
+3. **Check `git reflog`.** It shows where you've been, which makes most "lost" work findable.
+4. **Avoid destructive commands** (`reset --hard`, `push --force`) until you understand the situation.
+
+With that habit, the scary messages stop being scary and start being instructions.

@@ -1,0 +1,162 @@
+---
+title: 12. Working with Submodules & Large Repositories
+description: Use submodules, handle large files with Git LFS, and keep big repositories fast.
+---
+
+## Using submodules (git submodule)
+
+Git submodules allow you to include another repository within your current project. This is useful when integrating external libraries or dependencies that are maintained separately but are required in your project.
+
+### Adding a submodule to your project
+
+To add a submodule to your project, run the following command:
+
+```sh
+git submodule add <submodule-url>
+```
+
+This adds the specified repository as a submodule, making it available within your project. You can then use its code, such as calling functions from the included repository.
+
+### Updating a submodule
+
+Since a submodule is an independent repository, it may receive updates over time. To fetch the latest changes, navigate to the submodule's directory and run:
+
+```sh
+git pull origin <main-branch>
+```
+
+This updates the submodule to the latest version from its remote repository.
+
+### Pros and cons of submodules
+
+Using Git submodules has several advantages:
+
+- ✅ **Keeps dependencies separate:** each submodule remains an independent Git repository, maintaining its own history and versioning.
+- ✅ **Prevents unwanted updates:** since submodules are locked to a specific commit, your project won't break due to upstream changes.
+- ✅ **Reduces duplication:** shared libraries can be reused across multiple projects without copying files.
+
+However, submodules also come with some challenges:
+
+- ❌ **Complex workflows:** updating a submodule requires committing and pushing changes in the submodule first, then updating and committing the reference in the main project, since Git tracks submodules at a specific commit.
+- ❌ **Easy to forget updates:** developers must manually update submodules, which can lead to inconsistencies.
+- ❌ **Cloning issues:** when cloning a repository with submodules, users need to run:
+
+```sh
+git submodule update --init --recursive
+```
+
+to ensure all dependencies are properly fetched.
+
+While submodules are great for keeping external dependencies organized, they can be tricky to manage. If your project relies on frequent updates to shared code, using a package manager might be a smoother and less hassle-prone option.
+
+## Handling large files with Git LFS
+
+When working on projects that involve large files, such as big datasets or media assets, you might run into file size limits imposed by your remote repository hosting platform. To address this, Git provides Large File Storage (LFS), an extension designed to handle large files efficiently without bloating your repository.
+
+### Why large files are a problem
+
+Remember from [Chapter 7](/git-primer/internals/) that Git stores a snapshot of your files at every commit. For text files this is fine, but for a 200 MB video that changes a few times, Git ends up keeping every version forever inside `.git`. Over time the repository becomes huge, and every clone has to download that entire history. LFS solves this by storing a tiny **text pointer** in your repository instead of the file itself, while the actual content lives on a separate LFS server.
+
+### Setting up Git LFS
+
+Git LFS is a separate tool, so you first need to install it from [git-lfs.com](https://git-lfs.com/), then enable it once per machine:
+
+```sh
+git lfs install
+```
+
+This adds the hooks and filters Git needs to redirect large files to LFS.
+
+### Tracking large files
+
+Next, tell LFS which file patterns it should manage. This is best done **before** committing those files:
+
+```sh
+git lfs track "*.psd"
+git lfs track "*.mp4"
+```
+
+These commands update a `.gitattributes` file, which you must commit so the rest of your team uses the same rules:
+
+```sh
+git add .gitattributes
+git commit -m "Track large media files with Git LFS"
+```
+
+From now on, any matching file you add and commit is stored as a lightweight pointer, while LFS uploads the real content during `git push`.
+
+To see which files are currently handled by LFS, run:
+
+```sh
+git lfs ls-files
+```
+
+:::note
+Tracking only affects files going forward. It does **not** retroactively move files that are already committed in your history.
+:::
+
+### Migrating files that are already in history
+
+If large files were committed before you set up LFS, they're already baked into your history, and only rewriting history can move them. Git LFS provides a command for that:
+
+```sh
+git lfs migrate import --include="*.psd" --everything
+```
+
+:::caution
+This rewrites history and changes commit hashes, so coordinate with your team and force-push carefully, exactly like the history-rewrite warnings we saw in [Chapter 6](/git-primer/undoing-changes/).
+:::
+
+## Optimizing repository performance
+
+As a project grows over months or years, its `.git` directory accumulates a lot of objects, and some operations can start to feel slower. Git includes built-in maintenance tools to keep things fast.
+
+### Garbage collection
+
+Git stores each new object separately at first (these are called "loose" objects). The `git gc` command compresses them into packed files, removes objects that are no longer reachable, and tidies up references:
+
+```sh
+git gc
+```
+
+Git runs a light version of this automatically from time to time, but you can trigger it manually after large operations. For a more thorough cleanup, use:
+
+```sh
+git gc --aggressive --prune=now
+```
+
+### Background maintenance
+
+Modern Git can schedule maintenance to run quietly in the background so you never have to think about it:
+
+```sh
+git maintenance start
+```
+
+This keeps the repository optimized over time without interrupting your workflow.
+
+### Cloning large repositories faster
+
+When you only need the latest state of a big repository (for example on a CI server), you don't have to download its entire history. A **shallow clone** fetches only the most recent commits:
+
+```sh
+git clone --depth 1 <remote-repository-url>
+```
+
+This dramatically reduces clone time and disk usage. You can also use a **partial clone** to defer downloading file contents until they're actually needed:
+
+```sh
+git clone --filter=blob:none <remote-repository-url>
+```
+
+### A quick recap
+
+| Goal                              | Command                                      |
+| --------------------------------- | -------------------------------------------- |
+| Compress and clean up objects     | `git gc`                                      |
+| Aggressive one-off cleanup        | `git gc --aggressive --prune=now`             |
+| Automatic background upkeep       | `git maintenance start`                       |
+| Clone only recent history         | `git clone --depth 1 <url>`                   |
+| Clone without downloading blobs   | `git clone --filter=blob:none <url>`          |
+
+Between submodules, LFS, and these maintenance commands, you now have the tools to keep even a large, long-lived repository fast and manageable.

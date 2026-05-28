@@ -1,0 +1,101 @@
+---
+title: 13. Using Git with Other Tools
+description: Connect Git to hosting platforms, CI/CD pipelines, and your editor.
+---
+
+## Using Git with Other Tools
+
+Git rarely works alone. In a real project it sits at the center of an ecosystem: a hosting platform to collaborate on, an automation pipeline to test your code, and an editor that makes the everyday commands a click away. This chapter connects Git to the tools you'll actually use day to day.
+
+## GitHub / GitLab / Bitbucket basics
+
+As we saw all the way back in [Chapter 1](/git-primer/introduction/), these platforms are not Git itself, they're services built **on top of** Git that add collaboration features. The core Git workflow (clone, commit, push, pull) is identical across all three. What differs is the wrapper around it.
+
+The feature you'll use most is the **pull request** (called a **merge request** on GitLab). It's a proposal to merge one branch into another, and it's where code review actually happens. The typical loop looks like this:
+
+1. Push your feature branch to the platform.
+2. Open a pull/merge request targeting `main`.
+3. Teammates review, comment, and request changes.
+4. You push more commits; the request updates automatically.
+5. Once approved and checks pass, you merge.
+
+Beyond pull requests, all three platforms share a common toolkit:
+
+| Feature              | What it's for                                          |
+| -------------------- | ------------------------------------------------------ |
+| **Issues**           | Tracking bugs, tasks, and feature requests             |
+| **Pull/Merge requests** | Reviewing and discussing changes before they merge  |
+| **Protected branches** | Preventing direct pushes to `main`, requiring review |
+| **Releases & tags**  | Publishing versioned snapshots of your project         |
+| **Wikis / Pages**    | Hosting documentation alongside the code               |
+
+:::tip
+They differ mostly in emphasis: GitHub has the largest open-source community, GitLab bundles a powerful built-in CI/CD and DevOps suite, and Bitbucket integrates tightly with Atlassian tools like Jira. The Git skills you've learned transfer cleanly between all of them.
+:::
+
+### A quick word on authentication
+
+When you push to these platforms, you'll authenticate over either **HTTPS** or **SSH**. HTTPS asks for a token (modern platforms no longer accept account passwords for Git operations), while SSH uses a key pair you generate once and register with the platform. SSH is convenient for daily work because you don't re-enter credentials:
+
+```sh
+# Generate an SSH key, then add the public key to your platform account
+ssh-keygen -t ed25519 -C "your_email@example.com"
+```
+
+## Integrating Git with CI/CD
+
+**CI/CD** stands for Continuous Integration and Continuous Delivery/Deployment. The idea is simple and powerful: every time you push code or open a pull request, an automated pipeline runs your tests, checks, and even deployments, so problems are caught immediately instead of days later.
+
+This is the authoritative version of the automation we discussed in [Chapter 9](/git-primer/hooks-automation/). Local hooks give fast feedback but can be skipped; CI runs on a server and can't be bypassed, which is why teams gate merges on it.
+
+These pipelines are driven by a configuration file you commit to your repository. Because it lives in Git, your automation is versioned right alongside your code. On GitHub, the file lives under `.github/workflows/`. Here's a minimal example that runs tests on every push:
+
+```yaml
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install
+      - run: npm test
+```
+
+The pattern is the same across providers, only the file and syntax change:
+
+- **GitHub** uses GitHub Actions (`.github/workflows/*.yml`).
+- **GitLab** uses `.gitlab-ci.yml` at the repository root.
+- **Bitbucket** uses `bitbucket-pipelines.yml`.
+
+A typical pipeline lints the code, runs the test suite, builds the project, and (when everything passes on `main`) deploys it automatically. Combined with protected branches, this is how teams ship confidently many times a day.
+
+:::note
+This very book is a good example: its interactive version is built and deployed automatically by a CI pipeline every time a chapter is updated.
+:::
+
+## Using Git in VS Code and other IDEs
+
+Everything in this course has been taught on the command line, and that's deliberate, understanding the commands means you'll never be lost. But for daily work, a graphical interface inside your editor can make common tasks faster and conflicts easier to read.
+
+**VS Code** ships with Git support built in. Its Source Control panel lets you:
+
+- See changed files at a glance, with additions and deletions color-coded.
+- Stage and unstage changes with a click (the same as `git add` / `git restore --staged`).
+- Write a commit message and commit without leaving the editor.
+- View inline diffs and, crucially, resolve merge conflicts with **Accept Current / Incoming / Both** buttons, exactly the conflict markers we decoded by hand in [Chapter 4](/git-primer/branches/).
+
+Other popular tools cover the same ground:
+
+- **JetBrains IDEs** (IntelliJ, PyCharm, WebStorm, and friends) have an excellent built-in VCS panel and a powerful visual merge tool.
+- **Git GUIs** like GitKraken, Sourcetree, GitHub Desktop, and Lazygit visualize your branch graph and history.
+- The **GitHub CLI** (`gh`) brings pull requests and issues to your terminal:
+
+```sh
+gh pr create        # Open a pull request from the command line
+gh pr checkout 42   # Check out a teammate's pull request locally
+```
+
+:::tip
+Use whatever makes you productive. A GUI and the command line aren't rivals, most experienced developers happily mix both: the GUI for reviewing diffs and resolving conflicts, the CLI for everything precise and scriptable. Because you understand what each button maps to, you'll never feel trapped by the tool.
+:::

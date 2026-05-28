@@ -1,0 +1,120 @@
+---
+title: 9. Git Hooks & Automation
+description: Run scripts automatically at key points in Git's lifecycle, and share automation across a team.
+---
+
+## Git Hooks & Automation
+
+Wouldn't it be nice if Git could automatically run your tests before a commit, block a badly formatted message, or notify your team after a push? That's exactly what **hooks** let you do. A hook is just a script that Git runs automatically at a specific moment in its lifecycle.
+
+## Where hooks live
+
+Every repository ships with a `hooks/` directory inside `.git`:
+
+```sh
+ls .git/hooks
+```
+
+You'll find a list of sample files ending in `.sample`:
+
+```
+applypatch-msg.sample
+commit-msg.sample
+pre-commit.sample
+pre-push.sample
+...
+```
+
+These samples are inactive. To enable a hook, create a file with the exact hook name (no `.sample` extension), make it executable, and Git will run it at the right time:
+
+```sh
+chmod +x .git/hooks/pre-commit
+```
+
+A hook can be written in any language your system can execute (shell, Python, Node, etc.); Git just looks at the shebang line at the top of the file.
+
+:::note
+Hooks in `.git/hooks` are **local to your machine** and are not cloned or pushed. That's a deliberate security choice, you wouldn't want cloning a repo to run someone else's scripts. We'll see how to share hooks across a team at the end of this chapter.
+:::
+
+## Pre-commit hooks (.git/hooks/pre-commit)
+
+The `pre-commit` hook runs **before** a commit is created. If the script exits with a non-zero status, Git aborts the commit. This makes it the perfect gatekeeper for quality checks: running a linter, formatting code, or rejecting leftover debugging statements.
+
+Here's a minimal example that blocks a commit if it finds the word `TODO` in staged files:
+
+```sh
+#!/bin/sh
+if git diff --cached | grep -q "TODO"; then
+  echo "Commit blocked: remove TODO comments before committing."
+  exit 1
+fi
+exit 0
+```
+
+Save that as `.git/hooks/pre-commit`, make it executable, and try to commit a file containing `TODO`. Git will stop you. A real-world `pre-commit` hook usually runs your formatter and linter instead.
+
+## Post-commit and other hooks
+
+Hooks fall into two broad families: those that run **before** an action and can block it (the "pre" hooks), and those that run **after** an action and are mostly used for notifications or follow-up tasks.
+
+The `post-commit` hook, for instance, runs right after a commit is recorded. It can't stop anything (the commit already happened), but it's handy for things like printing a reminder or triggering a local build:
+
+```sh
+#!/bin/sh
+echo "Commit created. Don't forget to push when you're ready!"
+```
+
+Here are the hooks you'll reach for most often:
+
+| Hook          | When it runs                          | Common use                                |
+| ------------- | ------------------------------------- | ----------------------------------------- |
+| `pre-commit`  | Before the commit is created          | Lint, format, run quick tests             |
+| `commit-msg`  | After you write the commit message    | Enforce a message format (e.g. Conventional Commits) |
+| `post-commit` | After the commit is recorded          | Notifications, logging                    |
+| `pre-push`    | Before changes are sent to the remote | Run the full test suite                   |
+| `pre-rebase`  | Before a rebase starts                | Prevent rebasing protected branches       |
+
+A `commit-msg` hook is a great example because it receives the path to a temporary file containing the message, so you can validate it:
+
+```sh
+#!/bin/sh
+# Require messages to start with a type like feat:, fix:, docs:
+if ! head -1 "$1" | grep -qE "^(feat|fix|docs|chore|refactor): "; then
+  echo "Commit message must start with feat:, fix:, docs:, chore:, or refactor:"
+  exit 1
+fi
+```
+
+We'll talk more about why message conventions matter in [Chapter 10](/git-primer/best-practices/).
+
+## Automating workflows with Git
+
+Writing raw shell scripts in `.git/hooks` works, but it has two limits: the hooks aren't shared with your team, and managing them by hand gets tedious. The community has built tools to solve exactly this.
+
+### Sharing hooks with your team
+
+Since Git 2.9, you can point Git at a hooks directory that **is** tracked in your repository:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+Now you can commit a `.githooks/` folder, and everyone who runs that one config command (or has it set up automatically) shares the same hooks.
+
+### Hook managers
+
+For most teams, a dedicated tool is the smoother path. The two most popular are:
+
+- **Husky** for JavaScript/Node projects. It installs and manages hooks from your `package.json` setup, so they're versioned and shared automatically.
+- **pre-commit** (the framework, available at [pre-commit.com](https://pre-commit.com/)) for any language. You describe the checks you want in a `.pre-commit-config.yaml` file, and it handles installing and running them.
+
+These tools let your whole team enforce the same standards (formatting, linting, secret scanning) without anyone copying scripts by hand.
+
+### Server-side automation and CI/CD
+
+Local hooks are great for fast feedback, but they live on individual machines and can be bypassed. For checks you truly want to enforce, the real workhorse today is **Continuous Integration**: services like GitHub Actions, GitLab CI, or others run your tests and checks on a server every time you push or open a pull request. We'll explore that integration in [Chapter 13](/git-primer/other-tools/).
+
+:::tip
+A good rule of thumb: use local hooks for quick, developer-friendly checks (formatting, obvious mistakes), and use CI/CD for the authoritative checks that must never be skipped.
+:::
