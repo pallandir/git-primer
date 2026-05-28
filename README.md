@@ -2,13 +2,16 @@
 
 <br />
 <div align="center">
-<a href="https://leetcode.com">
+<a href="https://pallandir.github.io/git-primer/">
     <img src="./resources/git.svg" alt="Logo" width="80" height="80">
   </a>
   <h3 align="center">A brief debunk of Git</h3>
 
   <p align="center">
     Master Git and use it like a pro in your projects
+    <br />
+    <br />
+    <a href="https://pallandir.github.io/git-primer/"><strong>📖 Read the interactive book »</strong></a>
     <br />
     <br />
     <a href="https://github.com/pallandir/git-primer/issues">Report Bug</a>
@@ -27,15 +30,28 @@ This guide is your go-to introduction to Git, covering both beginner and advance
 
 ## How to read this course
 
-This course is an **interactive animated book** built with
-[Astro Starlight](https://starlight.astro.build/), living in the
-[`book/`](book/) folder. It walks you through Git with step-through animations
-for branching, merging, rebasing, resetting, stashing, and more.
+### 📖 Read it online
 
-- 📖 Read it online: [pallandir.github.io/git-primer](https://pallandir.github.io/git-primer/)
-- 🛠️ Run it locally: `cd book && npm install && npm run dev`
-- 🚀 Deploy it to GitHub Pages with the included workflow. See
-  [`book/README.md`](book/README.md) for details.
+The course is an interactive, animated book. The easiest way to read it is in
+your browser:
+
+### 👉 **[pallandir.github.io/git-primer](https://pallandir.github.io/git-primer/)**
+
+### 🛠️ Run it locally
+
+```bash
+npm install
+npm run dev
+```
+
+The book is built with [Astro Starlight](https://starlight.astro.build/) and
+served at `http://localhost:4321/git-primer/`.
+
+### 🚀 Deploy
+
+Every push to `main` builds the book and deploys it to GitHub Pages
+automatically via the
+[`deploy-book.yml`](.github/workflows/deploy-book.yml) workflow.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
