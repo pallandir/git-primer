@@ -1,5 +1,7 @@
 <script>
-  import { crossfade, fade } from "svelte/transition";
+  import { crossfade } from "svelte/transition";
+  import GitDemo from "./GitDemo.svelte";
+  import TimelineControls from "./TimelineControls.svelte";
 
   const [send, receive] = crossfade({ duration: 450 });
 
@@ -18,30 +20,17 @@
   ];
 
   let stage = $state(0);
-  let caption = $derived(captions[stage]);
-
-  function next() {
-    if (stage < 3) stage += 1;
-  }
-  function reset() {
-    stage = 0;
-  }
 </script>
 
-<div class="git-demo">
-  <div class="git-demo__bar">
-    <button
-      class="git-demo__btn git-demo__btn--primary"
-      onclick={next}
-      disabled={stage >= 3}
-    >
-      {stage < 3 ? areas[stage + 1].cmd : "Done"}
-    </button>
-    <button class="git-demo__btn" onclick={reset} disabled={stage === 0}>
-      Reset
-    </button>
-    <span class="git-demo__hint">Step {stage + 1} / 4</span>
-  </div>
+<GitDemo caption={captions[stage]} step={stage} count={captions.length}>
+  {#snippet controls()}
+    <TimelineControls
+      count={4}
+      bind:step={stage}
+      interval={1800}
+      labels={["", "git add", "git commit", "git push"]}
+    />
+  {/snippet}
 
   <div class="flow">
     {#each areas as area, i}
@@ -50,19 +39,11 @@
         <div class="flow__slot">
           {#if i === stage}
             {#if stage < 2}
-              <div
-                class="card card--file"
-                in:receive={{ key: "item" }}
-                out:send={{ key: "item" }}
-              >
+              <div class="card card--file" in:receive={{ key: "item" }} out:send={{ key: "item" }}>
                 <span class="card__icon">📄</span> app.js
               </div>
             {:else}
-              <div
-                class="card card--commit"
-                in:receive={{ key: "item" }}
-                out:send={{ key: "item" }}
-              >
+              <div class="card card--commit" in:receive={{ key: "item" }} out:send={{ key: "item" }}>
                 <span class="card__dot"></span> a1b2c3d
               </div>
             {/if}
@@ -71,17 +52,14 @@
       </div>
     {/each}
   </div>
-
-  {#key caption}
-    <p class="git-demo__caption" in:fade={{ duration: 250 }}>{caption}</p>
-  {/key}
-</div>
+</GitDemo>
 
 <style>
   .flow {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 0.5rem;
+    width: 100%;
   }
   .flow__col {
     border: 1px dashed var(--sl-color-gray-5);
@@ -90,7 +68,9 @@
     min-height: 6.5rem;
     display: flex;
     flex-direction: column;
-    transition: border-color 0.3s ease, background 0.3s ease;
+    transition:
+      border-color 0.3s ease,
+      background 0.3s ease;
   }
   .flow__col--active {
     border-color: var(--git-orange);
@@ -136,7 +116,7 @@
     border-radius: 50%;
     background: var(--git-orange);
   }
-  @media (max-width: 640px) {
+  @media (max-width: 520px) {
     .flow {
       grid-template-columns: 1fr 1fr;
     }

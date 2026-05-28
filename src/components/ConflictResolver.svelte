@@ -1,5 +1,6 @@
 <script>
   import { fade } from "svelte/transition";
+  import GitDemo from "./GitDemo.svelte";
 
   const ours = 'const greeting = "Hello team";';
   const theirs = 'const greeting = "Hello world";';
@@ -27,19 +28,21 @@
   );
 </script>
 
-<div class="git-demo">
-  <div class="git-demo__bar">
-    <button class="git-demo__btn git-demo__btn--primary" onclick={() => (resolution = "ours")}>
-      Keep ours (HEAD)
-    </button>
-    <button class="git-demo__btn git-demo__btn--primary" onclick={() => (resolution = "theirs")}>
-      Keep theirs
-    </button>
-    <button class="git-demo__btn" onclick={() => (resolution = "both")}>Keep both</button>
-    <button class="git-demo__btn" onclick={() => (resolution = null)} disabled={resolution === null}>
-      Reset
-    </button>
-  </div>
+<GitDemo {caption}>
+  {#snippet controls()}
+    <div class="gd__choices">
+      <button class="git-demo__btn git-demo__btn--primary" onclick={() => (resolution = "ours")}>
+        Keep ours (HEAD)
+      </button>
+      <button class="git-demo__btn git-demo__btn--primary" onclick={() => (resolution = "theirs")}>
+        Keep theirs
+      </button>
+      <button class="git-demo__btn" onclick={() => (resolution = "both")}>Keep both</button>
+      <button class="git-demo__btn" onclick={() => (resolution = null)} disabled={resolution === null}>
+        ↺ Reset
+      </button>
+    </div>
+  {/snippet}
 
   <div class="code-frame">
     <div class="code-frame__name">app.js</div>
@@ -55,17 +58,14 @@
       {/key}
     {/if}
   </div>
-
-  {#key caption}
-    <p class="git-demo__caption" in:fade={{ duration: 250 }}>{caption}</p>
-  {/key}
-</div>
+</GitDemo>
 
 <style>
   .code-frame {
     border: 1px solid var(--sl-color-gray-5);
     border-radius: 0.5rem;
     overflow: hidden;
+    width: 100%;
   }
   .code-frame__name {
     background: var(--sl-color-gray-6);
@@ -82,11 +82,28 @@
     line-height: 1.6;
     overflow-x: auto;
   }
-  .mk { font-weight: 700; }
-  .mk-ours { color: #f59b86; }
-  .mk-sep { color: var(--sl-color-gray-3); }
-  .mk-theirs { color: #86b8f5; }
-  .ours-line { color: #f5cd6b; display: block; }
-  .theirs-line { color: #86d5f5; display: block; }
-  .kept-line { color: #7ee2a8; display: block; }
+  .mk {
+    font-weight: 700;
+  }
+  .mk-ours {
+    color: #f59b86;
+  }
+  .mk-sep {
+    color: var(--sl-color-gray-3);
+  }
+  .mk-theirs {
+    color: #86b8f5;
+  }
+  .ours-line {
+    color: #f5cd6b;
+    display: block;
+  }
+  .theirs-line {
+    color: #86d5f5;
+    display: block;
+  }
+  .kept-line {
+    color: #7ee2a8;
+    display: block;
+  }
 </style>

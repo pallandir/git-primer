@@ -1,92 +1,52 @@
 <script>
-  import { fade } from "svelte/transition";
+  import GitDemo from "./GitDemo.svelte";
+  import TimelineControls from "./TimelineControls.svelte";
+  import CommitGraph from "./CommitGraph.svelte";
+  import { colX, laneY, stackLevels } from "./flow/graph.js";
 
-  const MAIN_Y = 50;
-  const FIX_Y = 120;
-  let picked = $state(false);
+  const captions = [
+    "A bug was fixed on the fix branch (commit X). We want only that single commit on main, not the whole branch.",
+    "git cherry-pick copied just the bug-fix commit (X) onto main as a new commit (X'), with a new hash. The rest of the fix branch was left behind.",
+  ];
 
-  let caption = $derived(
-    picked
-      ? "git cherry-pick copied just the bug-fix commit (X) onto main as a new commit (X'), with a new hash. The rest of the fix branch was left behind."
-      : "A bug was fixed on the fix branch (commit X). We want only that single commit on main, not the whole branch.",
+  const labels = ["A fix branch with one wanted commit", "Cherry-pick X onto main"];
+
+  let step = $state(0);
+  let picked = $derived(step >= 1);
+
+  let nodes = $derived(
+    [
+      { id: "A", x: colX(0), y: laneY("main"), variant: "main" },
+      { id: "B", x: colX(1), y: laneY("main"), variant: "main" },
+      { id: "C", x: colX(2), y: laneY("main"), variant: "main" },
+      { id: "Y", x: colX(2), y: laneY("feature"), variant: "alt" },
+      { id: "X", x: colX(3), y: laneY("feature"), variant: "pick", ghost: picked },
+      picked && { id: "Xp", x: colX(3), y: laneY("main"), variant: "pick", label: "X'" },
+    ].filter(Boolean),
+  );
+
+  let edges = $derived(
+    [
+      { id: "eAB", from: "A", to: "B", variant: "main" },
+      { id: "eBC", from: "B", to: "C", variant: "main" },
+      { id: "eBY", from: "B", to: "Y", variant: "alt" },
+      { id: "eYX", from: "Y", to: "X", variant: "alt", ghost: picked },
+      picked && { id: "eCXp", from: "C", to: "Xp", variant: "pick" },
+    ].filter(Boolean),
+  );
+
+  let pointers = $derived(
+    stackLevels([
+      { key: "main", label: "main", at: picked ? "Xp" : "C", variant: "branch" },
+      { key: "fix", label: "fix", at: "X", variant: "alt" },
+    ]),
   );
 </script>
 
-<div class="git-demo">
-  <div class="git-demo__bar">
-    <button
-      class="git-demo__btn git-demo__btn--primary"
-      onclick={() => (picked = true)}
-      disabled={picked}
-    >
-      git cherry-pick X
-    </button>
-    <button class="git-demo__btn" onclick={() => (picked = false)} disabled={!picked}>
-      Reset
-    </button>
-  </div>
+<GitDemo caption={captions[step]} {step} count={captions.length}>
+  {#snippet controls()}
+    <TimelineControls count={captions.length} bind:step interval={2200} {labels} />
+  {/snippet}
 
-  <svg viewBox="0 0 500 165" class="graph" role="img" aria-label="git cherry-pick a single commit">
-    <text x="14" y={MAIN_Y + 4} class="lane-label main">main</text>
-    <text x="30" y={FIX_Y + 4} class="lane-label fix">fix</text>
-
-    <!-- main line -->
-    <line x1="70" y1={MAIN_Y} x2="160" y2={MAIN_Y} class="edge" />
-    <line x1="160" y1={MAIN_Y} x2="250" y2={MAIN_Y} class="edge" />
-    {#if picked}
-      <line x1="250" y1={MAIN_Y} x2="340" y2={MAIN_Y} class="edge pick on" />
-    {/if}
-
-    <!-- fix line -->
-    <line x1="160" y1={MAIN_Y} x2="250" y2={FIX_Y} class="edge fix-edge" />
-    <line x1="250" y1={FIX_Y} x2="340" y2={FIX_Y} class="edge fix-edge" />
-
-    {#each [{ id: "A", x: 70 }, { id: "B", x: 160 }, { id: "C", x: 250 }] as c}
-      <g>
-        <circle cx={c.x} cy={MAIN_Y} r="15" class="node main-node" />
-        <text x={c.x} y={MAIN_Y + 4} class="node-text">{c.id}</text>
-      </g>
-    {/each}
-
-    <!-- fix commits -->
-    <g>
-      <circle cx="250" cy={FIX_Y} r="15" class="node fix-node" />
-      <text x="250" y={FIX_Y + 4} class="node-text">Y</text>
-    </g>
-    <g class="pick-source" class:lifted={picked}>
-      <circle cx="340" cy={FIX_Y} r="15" class="node pick-node" />
-      <text x="340" y={FIX_Y + 4} class="node-text">X</text>
-    </g>
-
-    <!-- the cherry-picked copy on main -->
-    {#if picked}
-      <g in:fade={{ duration: 400, delay: 250 }}>
-        <circle cx="340" cy={MAIN_Y} r="15" class="node pick-node" />
-        <text x="340" y={MAIN_Y + 4} class="node-text">X'</text>
-        <text x="375" y={MAIN_Y - 18} class="cherry">🍒</text>
-      </g>
-    {/if}
-  </svg>
-
-  {#key caption}
-    <p class="git-demo__caption" in:fade={{ duration: 250 }}>{caption}</p>
-  {/key}
-</div>
-
-<style>
-  .graph { width: 100%; height: auto; }
-  .lane-label { font-size: 12px; font-weight: 700; }
-  .lane-label.main { fill: var(--git-orange); }
-  .lane-label.fix { fill: #b07cff; }
-  .edge { stroke: var(--sl-color-gray-4); stroke-width: 3; }
-  .fix-edge { stroke: #b07cff; }
-  .pick { stroke: #ff5fa2; }
-  .node { stroke: #fff2; stroke-width: 2; }
-  .main-node { fill: var(--git-orange); }
-  .fix-node { fill: #b07cff; }
-  .pick-node { fill: #ff5fa2; }
-  .node-text { font-size: 11px; font-weight: 700; fill: #fff; text-anchor: middle; pointer-events: none; }
-  .cherry { font-size: 16px; text-anchor: middle; }
-  .pick-source { transition: opacity 0.4s ease; }
-  .pick-source.lifted { opacity: 0.3; }
-</style>
+  <CommitGraph {nodes} {edges} {pointers} label="git cherry-pick a single commit onto main" />
+</GitDemo>

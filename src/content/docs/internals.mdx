@@ -4,6 +4,8 @@ description: The Git object model, how Git stores snapshots instead of diffs, an
 ---
 
 import ObjectModel from '../../components/ObjectModel.svelte';
+import CommitBlockchain from '../../components/CommitBlockchain.svelte';
+import HeadRefsTimeline from '../../components/HeadRefsTimeline.svelte';
 
 ## The Git object model (blobs, trees, commits)
 
@@ -70,6 +72,20 @@ If a file did not change between two commits, Git is smart enough not to store i
 
 This is why operations like switching branches or viewing an old version are so fast: Git doesn't rebuild your files by replaying diffs, it just reads the snapshot that already exists. When Git _shows_ you a diff (for example in `git log -p`), it computes that difference on the fly by comparing two snapshots, but that's a presentation detail, not how the data is stored.
 
+## Commits form a chain, like a blockchain
+
+Here is one of the most useful mental models for Git: a commit behaves a lot like a block in a blockchain.
+
+Every commit is identified by a hash computed from its content, its tree (the snapshot), its author, its message, and, crucially, the hash of its parent commit. Because the parent's hash is baked into the child, the commits form a tamper-evident chain. Change anything in an old commit and its hash changes, which changes the "parent" recorded in the next commit, which changes that commit's hash too, and so on, all the way to the tip.
+
+Try it yourself. Edit a message in an early block, or hit "Tamper with commit #0", and watch the whole chain downstream re-hash:
+
+<CommitBlockchain client:only="svelte" />
+
+> 💡 This is exactly why you cannot quietly rewrite shared history. The moment you change an old commit, every later commit gets a new hash, and anyone who already has the original chain will spot the mismatch.
+
+> 📖 The demo is simplified to keep the focus on the chaining. Git's real commit hashes are computed with SHA-1 (or SHA-256 in newer repositories) over the full commit object, whose format is roughly `commit <size>\0tree <hash>\nparent <hash>\nauthor ...\ncommitter ...\n\n<message>`. The principle is identical: the parent's hash is part of what gets hashed, so the history is cryptographically chained.
+
 ## Git references (HEAD, refs, tags)
 
 Snapshots and objects are stored using their SHA-1 hash, a 40-character identifier like `85c035458122ca9f90a56fc2fa167bb61d22580b`. Nobody wants to type that. **References** (or "refs") are human-friendly names that point to those hashes, and Git uses them everywhere.
@@ -95,6 +111,10 @@ cat .git/HEAD
 ```
 
 This indirection is what lets Git know which branch should move forward when you commit. As mentioned in [Chapter 2](/git-primer/setup/), if `HEAD` points straight at a commit instead of a branch, you are in a **detached HEAD** state.
+
+Pointers are much easier to understand once you watch them move. Step through committing, switching branches, and detaching HEAD below. Pay attention to what moves: in many steps, only the pointers change, no files are copied:
+
+<HeadRefsTimeline client:visible />
 
 ### Tags
 

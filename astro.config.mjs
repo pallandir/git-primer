@@ -33,6 +33,9 @@ export default defineConfig({
           "https://github.com/pallandir/git-primer/edit/main/",
       },
       customCss: ["./src/styles/custom.css"],
+      components: {
+        Hero: "./src/components/Hero.astro",
+      },
       sidebar: [
         {
           label: "Start here",

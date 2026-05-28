@@ -1,24 +1,27 @@
 <script>
   import { fade, fly } from "svelte/transition";
+  import GitDemo from "./GitDemo.svelte";
+  import TimelineControls from "./TimelineControls.svelte";
 
-  const layers = [
+  const captions = [
+    "Step through how one commit references your whole project.",
     "The commit stores metadata (author, date, message) and points to one tree.",
     "The tree represents your project folder. It points to blobs and other trees.",
     "Blobs hold the actual file contents. Identical files are stored only once.",
   ];
 
   let revealed = $state(0);
-  function more() { if (revealed < 3) revealed += 1; }
-  function reset() { revealed = 0; }
 </script>
 
-<div class="git-demo">
-  <div class="git-demo__bar">
-    <button class="git-demo__btn git-demo__btn--primary" onclick={more} disabled={revealed >= 3}>
-      {revealed === 0 ? "Show commit" : revealed === 1 ? "Show tree" : revealed === 2 ? "Show blobs" : "Done"} ▸
-    </button>
-    <button class="git-demo__btn" onclick={reset} disabled={revealed === 0}>Reset</button>
-  </div>
+<GitDemo caption={captions[revealed]} step={revealed} count={captions.length}>
+  {#snippet controls()}
+    <TimelineControls
+      count={4}
+      bind:step={revealed}
+      interval={2000}
+      labels={["", "Show commit", "Show tree", "Show blobs"]}
+    />
+  {/snippet}
 
   <div class="model">
     {#if revealed >= 1}
@@ -53,16 +56,10 @@
     {/if}
 
     {#if revealed === 0}
-      <p class="placeholder">Step through how one commit references your whole project.</p>
+      <p class="placeholder">Press play, or step forward, to peel back the layers of a commit.</p>
     {/if}
   </div>
-
-  {#if revealed >= 1}
-    {#key revealed}
-      <p class="git-demo__caption" in:fade={{ duration: 250 }}>{layers[revealed - 1]}</p>
-    {/key}
-  {/if}
-</div>
+</GitDemo>
 
 <style>
   .model {
@@ -70,7 +67,8 @@
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
-    min-height: 8rem;
+    min-height: 12rem;
+    width: 100%;
     justify-content: center;
   }
   .obj {
@@ -98,10 +96,31 @@
     font-size: 0.78rem;
     color: var(--sl-color-gray-2);
   }
-  .obj--commit { border-color: var(--git-orange); background: color-mix(in srgb, var(--git-orange) 14%, transparent); }
-  .obj--tree { border-color: #4aa3ff; background: color-mix(in srgb, #4aa3ff 14%, transparent); }
-  .obj--blob { border-color: #7ee2a8; background: color-mix(in srgb, #7ee2a8 12%, transparent); }
-  .blobs { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
-  .arrow { font-size: 0.75rem; color: var(--sl-color-gray-3); }
-  .placeholder { color: var(--sl-color-gray-4); font-size: 0.9rem; }
+  .obj--commit {
+    border-color: var(--git-orange);
+    background: color-mix(in srgb, var(--git-orange) 14%, transparent);
+  }
+  .obj--tree {
+    border-color: #4aa3ff;
+    background: color-mix(in srgb, #4aa3ff 14%, transparent);
+  }
+  .obj--blob {
+    border-color: #7ee2a8;
+    background: color-mix(in srgb, #7ee2a8 12%, transparent);
+  }
+  .blobs {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .arrow {
+    font-size: 0.75rem;
+    color: var(--sl-color-gray-3);
+  }
+  .placeholder {
+    color: var(--sl-color-gray-4);
+    font-size: 0.9rem;
+    text-align: center;
+  }
 </style>

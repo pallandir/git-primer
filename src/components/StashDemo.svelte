@@ -1,5 +1,8 @@
 <script>
   import { crossfade, fade } from "svelte/transition";
+  import GitDemo from "./GitDemo.svelte";
+  import TimelineControls from "./TimelineControls.svelte";
+
   const [send, receive] = crossfade({ duration: 450 });
 
   // state: 0 = dirty working dir, 1 = stashed (clean), 2 = popped back
@@ -13,32 +16,24 @@
         ? "git stash tucked your changes onto the stash stack. Your working directory is now clean and safe to switch branches."
         : "git stash pop brought your changes back from the stack into the working directory, right where you left off.",
   );
-
-  function stash() { state = 1; }
-  function pop() { state = 2; }
-  function reset() { state = 0; }
 </script>
 
-<div class="git-demo">
-  <div class="git-demo__bar">
-    {#if state === 0}
-      <button class="git-demo__btn git-demo__btn--primary" onclick={stash}>git stash</button>
-    {:else if state === 1}
-      <button class="git-demo__btn git-demo__btn--primary" onclick={pop}>git stash pop</button>
-    {/if}
-    <button class="git-demo__btn" onclick={reset} disabled={state === 0}>Reset</button>
-  </div>
+<GitDemo {caption} step={state} count={3}>
+  {#snippet controls()}
+    <TimelineControls
+      count={3}
+      bind:step={state}
+      interval={2000}
+      labels={["", "git stash", "git stash pop"]}
+    />
+  {/snippet}
 
   <div class="stash">
     <div class="stash__col">
       <div class="stash__title">Working Directory</div>
       <div class="stash__slot">
         {#if !stashed}
-          <div
-            class="card"
-            in:receive={{ key: "work" }}
-            out:send={{ key: "work" }}
-          >
+          <div class="card" in:receive={{ key: "work" }} out:send={{ key: "work" }}>
             <span>📄</span> app.js <em>(modified)</em>
           </div>
         {:else}
@@ -53,11 +48,7 @@
       <div class="stash__title">📦 Stash stack</div>
       <div class="stash__slot">
         {#if stashed}
-          <div
-            class="card card--stash"
-            in:receive={{ key: "work" }}
-            out:send={{ key: "work" }}
-          >
+          <div class="card card--stash" in:receive={{ key: "work" }} out:send={{ key: "work" }}>
             stash@&#123;0&#125;
           </div>
         {:else}
@@ -66,11 +57,7 @@
       </div>
     </div>
   </div>
-
-  {#key caption}
-    <p class="git-demo__caption" in:fade={{ duration: 250 }}>{caption}</p>
-  {/key}
-</div>
+</GitDemo>
 
 <style>
   .stash {
@@ -78,6 +65,7 @@
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 0.75rem;
+    width: 100%;
   }
   .stash__col {
     border: 1px dashed var(--sl-color-gray-5);
@@ -117,8 +105,19 @@
     color: #fff;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
   }
-  .card em { opacity: 0.85; font-style: italic; }
-  .card--stash { background: #6b4bb0; }
-  .clean { color: #7ee2a8; font-weight: 600; }
-  .empty { color: var(--sl-color-gray-4); font-size: 0.85rem; }
+  .card em {
+    opacity: 0.85;
+    font-style: italic;
+  }
+  .card--stash {
+    background: #6b4bb0;
+  }
+  .clean {
+    color: #7ee2a8;
+    font-weight: 600;
+  }
+  .empty {
+    color: var(--sl-color-gray-4);
+    font-size: 0.85rem;
+  }
 </style>

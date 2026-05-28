@@ -3,6 +3,14 @@ title: 5. Remote Repositories
 description: Connect to remotes, push and fetch changes, pull updates, and contribute to open source.
 ---
 
+import RemoteSync from '../../components/RemoteSync.svelte';
+
+## The push / fetch / pull cycle at a glance
+
+Working with a remote is really just moving commits between two repositories: your **local** one and the **remote** (usually called `origin`). Before we dig into each command, play through the full cycle below. Watch closely what happens to `main` versus `origin/main`, especially during `fetch`.
+
+<RemoteSync client:visible />
+
 ## Connecting to a remote (git remote add)
 
 To work with a remote repository, Git needs to know where your code is hosted. You can configure one or more remote URLs in your repository. Each remote is assigned an alias to reference it easily instead of using the full URL.
