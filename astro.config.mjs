@@ -32,6 +32,7 @@ export default defineConfig({
         baseUrl:
           "https://github.com/pallandir/git-primer/edit/main/",
       },
+      tableOfContents: false,
       customCss: ["./src/styles/custom.css"],
       components: {
         Hero: "./src/components/Hero.astro",
