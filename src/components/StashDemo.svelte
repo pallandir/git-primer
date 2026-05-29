@@ -1,123 +1,171 @@
 <script>
-  import { crossfade, fade } from "svelte/transition";
+  import { onMount, untrack } from "svelte";
+  import {
+    SvelteFlow,
+    Background,
+    BackgroundVariant,
+    Position,
+  } from "@xyflow/svelte";
+  import "@xyflow/svelte/dist/style.css";
   import GitDemo from "./GitDemo.svelte";
   import TimelineControls from "./TimelineControls.svelte";
+  import ZoneNode from "./flow/ZoneNode.svelte";
+  import PacketEdge from "./flow/PacketEdge.svelte";
 
-  const [send, receive] = crossfade({ duration: 450 });
+  const nodeTypes = { zone: ZoneNode };
+  const edgeTypes = { packet: PacketEdge };
 
-  // state: 0 = dirty working dir, 1 = stashed (clean), 2 = popped back
-  let state = $state(0);
-  const stashed = $derived(state === 1);
+  const zones = ["📂 Working Directory", "📦 Stash stack"];
 
-  let caption = $derived(
-    state === 0
-      ? "You have uncommitted edits in app.js, but you suddenly need a clean working directory to switch branches."
-      : state === 1
-        ? "git stash tucked your changes onto the stash stack. Your working directory is now clean and safe to switch branches."
-        : "git stash pop brought your changes back from the stack into the working directory, right where you left off.",
-  );
+  // Each state is a full snapshot: which zone is active, what each zone holds,
+  // and the command that produced it.
+  const states = [
+    {
+      active: 0,
+      label: "git stash",
+      cards: [{ kind: "file", icon: "📄", text: "app.js" }, { kind: "empty", text: "empty" }],
+      caption:
+        "You have uncommitted edits in app.js, but you suddenly need a clean working directory to switch branches.",
+    },
+    {
+      active: 1,
+      label: "git stash",
+      cards: [{ kind: "clean", text: "✓ clean" }, { kind: "stash", text: "stash@{0}" }],
+      caption:
+        "git stash tucked your changes onto the stash stack. Your working directory is now clean and safe to switch branches.",
+    },
+    {
+      active: 0,
+      label: "git stash pop",
+      cards: [{ kind: "file", icon: "📄", text: "app.js" }, { kind: "empty", text: "empty" }],
+      caption:
+        "git stash pop brought your changes back from the stack into the working directory, right where you left off.",
+    },
+  ];
+
+  const ZONE_W = 240;
+  const ZONE_H = 250;
+  const ZONE_GAP = 170;
+
+  let step = $state(0);
+  let prevStep = 0;
+  let colorMode = $state("dark");
+
+  const vis = $state({
+    zones: [],
+    activeEdge: -1,
+    fire: [0],
+    fireDir: "forward",
+    edgeLabels: ["git stash"],
+  });
+
+  function updateZones(s, transit) {
+    const m = states[s];
+    vis.zones = zones.map((label, i) => ({
+      active: i === m.active,
+      card: transit ? null : m.cards[i],
+    }));
+    vis.edgeLabels = [m.label];
+  }
+
+  function onArrive() {
+    vis.activeEdge = -1;
+    updateZones(step, false);
+  }
+
+  const initialNodes = zones.map((label, i) => ({
+    id: `z${i}`,
+    type: "zone",
+    position: { x: i * (ZONE_W + ZONE_GAP), y: 0 },
+    width: ZONE_W,
+    height: ZONE_H,
+    sourcePosition: Position.Right,
+    targetPosition: Position.Left,
+    draggable: false,
+    selectable: false,
+    data: { index: i, label, vis },
+  }));
+
+  const initialEdges = [
+    {
+      id: "e0",
+      source: "z0",
+      target: "z1",
+      type: "packet",
+      data: { index: 0, cmd: "git stash", vis, onArrive },
+    },
+  ];
+
+  let nodes = $state.raw(initialNodes);
+  let edges = $state.raw(initialEdges);
+
+  updateZones(0, false);
+
+  $effect(() => {
+    const s = step;
+    untrack(() => {
+      if (s === prevStep) return;
+      if (s === prevStep + 1) {
+        // stash (0->1) sends the change to the stack; pop (1->2) brings it back.
+        vis.fireDir = s === 1 ? "forward" : "reverse";
+        vis.activeEdge = 0;
+        updateZones(s, true);
+        vis.fire[0] += 1;
+      } else {
+        vis.activeEdge = -1;
+        updateZones(s, false);
+      }
+      prevStep = s;
+    });
+  });
+
+  onMount(() => {
+    const sync = () =>
+      (colorMode =
+        document.documentElement.dataset.theme === "light" ? "light" : "dark");
+    sync();
+    const obs = new MutationObserver(sync);
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    return () => obs.disconnect();
+  });
 </script>
 
-<GitDemo {caption} step={state} count={3}>
+<GitDemo caption={states[step].caption} {step} count={states.length} height="400px">
   {#snippet controls()}
     <TimelineControls
-      count={3}
-      bind:step={state}
-      interval={2000}
+      count={states.length}
+      bind:step
+      interval={2200}
       labels={["", "git stash", "git stash pop"]}
     />
   {/snippet}
 
-  <div class="stash">
-    <div class="stash__col">
-      <div class="stash__title">Working Directory</div>
-      <div class="stash__slot">
-        {#if !stashed}
-          <div class="card" in:receive={{ key: "work" }} out:send={{ key: "work" }}>
-            <span>📄</span> app.js <em>(modified)</em>
-          </div>
-        {:else}
-          <div class="clean" in:fade={{ duration: 300, delay: 200 }}>✓ clean</div>
-        {/if}
-      </div>
-    </div>
-
-    <div class="stash__arrow">{stashed ? "→" : "←"}</div>
-
-    <div class="stash__col">
-      <div class="stash__title">📦 Stash stack</div>
-      <div class="stash__slot">
-        {#if stashed}
-          <div class="card card--stash" in:receive={{ key: "work" }} out:send={{ key: "work" }}>
-            stash@&#123;0&#125;
-          </div>
-        {:else}
-          <div class="empty">empty</div>
-        {/if}
-      </div>
-    </div>
-  </div>
+  <SvelteFlow
+    bind:nodes
+    bind:edges
+    {nodeTypes}
+    {edgeTypes}
+    {colorMode}
+    fitView
+    fitViewOptions={{ padding: 0.1 }}
+    nodesDraggable={false}
+    nodesConnectable={false}
+    elementsSelectable={false}
+    zoomOnScroll={false}
+    zoomOnDoubleClick={false}
+    panOnScroll={false}
+    panOnDrag={false}
+    proOptions={{ hideAttribution: true }}
+  >
+    <Background variant={BackgroundVariant.Dots} gap={22} size={1} />
+  </SvelteFlow>
 </GitDemo>
 
 <style>
-  .stash {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 0.75rem;
-    width: 100%;
-  }
-  .stash__col {
-    border: 1px dashed var(--sl-color-gray-5);
-    border-radius: 0.5rem;
-    padding: 0.6rem;
-    min-height: 6rem;
-    display: flex;
-    flex-direction: column;
-  }
-  .stash__title {
-    font-size: 0.74rem;
-    font-weight: 600;
-    color: var(--sl-color-gray-3);
-    text-align: center;
-    margin-bottom: 0.5rem;
-  }
-  .stash__slot {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .stash__arrow {
-    font-size: 1.5rem;
-    color: var(--git-orange);
-    font-weight: 700;
-  }
-  .card {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.45rem 0.7rem;
-    border-radius: 0.5rem;
-    font-size: 0.8rem;
-    font-family: monospace;
-    background: var(--git-orange);
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-  }
-  .card em {
-    opacity: 0.85;
-    font-style: italic;
-  }
-  .card--stash {
-    background: #6b4bb0;
-  }
-  .clean {
-    color: #7ee2a8;
-    font-weight: 600;
-  }
-  .empty {
-    color: var(--sl-color-gray-4);
-    font-size: 0.85rem;
+  :global(.gd--fixed .svelte-flow) {
+    background: var(--sl-color-black);
   }
 </style>

@@ -4,14 +4,15 @@
   import "@xyflow/svelte/dist/style.css";
   import GitDemo from "./GitDemo.svelte";
   import CommitBlock from "./flow/CommitBlock.svelte";
+  import FitViewport from "./flow/FitViewport.svelte";
 
   const nodeTypes = { commit: CommitBlock };
   const GENESIS = "0000000";
+  const MAX_COMMITS = 4;
 
   const initial = [
     { tree: "tree·9f3a1", author: "amy", message: "Initial commit" },
     { tree: "tree·7c2b8", author: "amy", message: "Add README" },
-    { tree: "tree·4e8d0", author: "sam", message: "Build login form" },
   ];
 
   let chain = $state(structuredClone(initial));
@@ -112,7 +113,10 @@
     return `tree·${hex.slice(0, 5)}`;
   }
 
+  let atMax = $derived(chain.length >= MAX_COMMITS);
+
   async function addCommit() {
+    if (atMax) return;
     chain.push({
       tree: randTree(),
       author: "you",
@@ -122,15 +126,20 @@
     caption = `git commit appended block #${chain.length - 1}. Its "parent" is the previous tip's hash, linking it to the whole chain.`;
   }
 
+  let tampered = $state(false);
   async function tamper() {
-    chain[0].message = "Initial commit 😈 (edited)";
+    tampered = !tampered;
+    chain[0].message = tampered
+      ? "Initial commit 😈 (edited)"
+      : "Initial commit";
     const flashed = await recompute(0);
-    caption = `Tampering with the very first commit forced all ${flashed.size} blocks to re-hash. In a shared repo everyone would instantly notice the mismatch. That is Git's integrity guarantee.`;
+    caption = `Tampering with the very first commit forced all ${flashed.size} block${flashed.size > 1 ? "s" : ""} to re-hash. In a shared repo everyone would instantly notice the mismatch. That is Git's integrity guarantee.`;
   }
 
   async function reset() {
     chain = structuredClone(initial);
     treeCounter = 0;
+    tampered = false;
     await recompute(0);
     caption =
       "Each block stores its parent's hash. Edit any message and watch every later hash change.";
@@ -158,7 +167,11 @@
 <GitDemo {caption}>
   {#snippet controls()}
     <div class="gd__choices">
-      <button class="git-demo__btn git-demo__btn--primary" onclick={addCommit}>
+      <button
+        class="git-demo__btn git-demo__btn--primary"
+        onclick={addCommit}
+        disabled={atMax}
+      >
         git commit ▸
       </button>
       <button class="git-demo__btn" onclick={tamper}>Tamper with commit #0</button>
@@ -175,7 +188,7 @@
         {nodeTypes}
         {colorMode}
         fitView
-        fitViewOptions={{ padding: 0.12 }}
+        fitViewOptions={{ padding: 0.12, maxZoom: 1 }}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
@@ -188,6 +201,7 @@
         proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
+        <FitViewport trigger={chain.length} />
       </SvelteFlow>
     {:else}
       <p class="chain__loading">Loading chain…</p>
@@ -196,6 +210,10 @@
 </GitDemo>
 
 <style>
+  .gd__choices :global(.git-demo__btn:disabled) {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
   .chain {
     height: 340px;
     border: 1px solid var(--sl-color-gray-5);
