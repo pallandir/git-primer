@@ -146,7 +146,7 @@
     fill: var(--git-orange);
   }
   .lane-label.feat {
-    fill: #4aa3ff;
+    fill: var(--gp-feature);
   }
   .edge {
     stroke-width: 3.5;
@@ -156,7 +156,7 @@
     stroke: var(--git-orange);
   }
   .edge--feat {
-    stroke: #4aa3ff;
+    stroke: var(--gp-feature);
   }
   .node {
     transform-box: fill-box;
@@ -170,8 +170,8 @@
     stroke: color-mix(in srgb, var(--git-orange) 40%, #000);
   }
   .dot--feat {
-    fill: #4aa3ff;
-    stroke: #1f6fbf;
+    fill: var(--gp-feature);
+    stroke: var(--gp-feature-stroke);
   }
   .dot--merge {
     fill: var(--sl-color-bg, #14110f);

@@ -1,31 +1,52 @@
 <script>
-  import { fade } from "svelte/transition";
+  import { flip } from "svelte/animate";
   import GitDemo from "./GitDemo.svelte";
+  import { DUR } from "./flow/graph.js";
 
   const ours = 'const greeting = "Hello team";';
   const theirs = 'const greeting = "Hello world";';
 
   let resolution = $state(null); // null | 'ours' | 'theirs' | 'both'
 
-  const resolved = $derived(
-    resolution === "ours"
-      ? [ours]
-      : resolution === "theirs"
-        ? [theirs]
-        : resolution === "both"
-          ? [ours, theirs]
-          : null,
+  const conflict = [
+    { id: "m1", role: "mk-ours", text: "<<<<<<< HEAD" },
+    { id: "ours", role: "ours", text: ours },
+    { id: "sep", role: "mk-sep", text: "=======" },
+    { id: "theirs", role: "theirs", text: theirs },
+    { id: "m2", role: "mk-theirs", text: ">>>>>>> feature" },
+  ];
+
+  const lines = $derived(
+    resolution === null
+      ? conflict
+      : resolution === "ours"
+        ? [{ id: "ours", role: "kept", text: ours }]
+        : resolution === "theirs"
+          ? [{ id: "theirs", role: "kept", text: theirs }]
+          : [
+              { id: "ours", role: "kept", text: ours },
+              { id: "theirs", role: "kept", text: theirs },
+            ],
   );
 
   let caption = $derived(
     resolution === null
-      ? "Git marked the conflict. Pick which side to keep, then it removes the markers for you."
+      ? "Git marked the conflict. Pick which side to keep, and watch it strip out the markers for you."
       : resolution === "ours"
-        ? "Kept your current branch's version (between <<<<<<< and =======)."
+        ? "Kept your current branch's version (the part between <<<<<<< and =======)."
         : resolution === "theirs"
-          ? "Kept the incoming branch's version (between ======= and >>>>>>>)."
+          ? "Kept the incoming branch's version (the part between ======= and >>>>>>>)."
           : "Kept both lines. Sometimes the right answer is to combine them.",
   );
+
+  function collapse(node, { duration = 340 } = {}) {
+    const h = node.offsetHeight;
+    return {
+      duration,
+      css: (t, u) =>
+        `opacity:${t}; max-height:${t * h}px; transform:translateX(${u * -14}px); overflow:hidden;`,
+    };
+  }
 </script>
 
 <GitDemo {caption}>
@@ -46,17 +67,10 @@
 
   <div class="code-frame">
     <div class="code-frame__name">app.js</div>
-    {#if resolution === null}
-      <pre class="code"><code><span class="mk mk-ours">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
-<span class="ours-line">{ours}</span>
-<span class="mk mk-sep">=======</span>
-<span class="theirs-line">{theirs}</span>
-<span class="mk mk-theirs">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature</span></code></pre>
-    {:else}
-      {#key resolution}
-        <pre class="code" in:fade={{ duration: 300 }}><code>{#each resolved as line}<span class="kept-line">{line}</span>{"\n"}{/each}</code></pre>
-      {/key}
-    {/if}
+    <pre class="code"><code>{#each lines as line (line.id)}<span
+          class="line line--{line.role}"
+          animate:flip={{ duration: DUR.move }}
+          out:collapse>{line.text}</span>{/each}</code></pre>
   </div>
 </GitDemo>
 
@@ -71,7 +85,7 @@
     background: var(--sl-color-gray-6);
     padding: 0.35rem 0.75rem;
     font-size: 0.75rem;
-    font-family: monospace;
+    font-family: var(--__sl-font-mono, monospace);
     color: var(--sl-color-gray-2);
     border-bottom: 1px solid var(--sl-color-gray-5);
   }
@@ -79,31 +93,35 @@
     margin: 0;
     padding: 0.85rem;
     font-size: 0.82rem;
-    line-height: 1.6;
+    line-height: 1.7;
     overflow-x: auto;
+    min-height: 9.5rem;
   }
-  .mk {
+  .line {
+    display: block;
+    white-space: pre;
+  }
+  .line--mk-ours,
+  .line--mk-sep,
+  .line--mk-theirs {
     font-weight: 700;
   }
-  .mk-ours {
+  .line--mk-ours {
     color: #f59b86;
   }
-  .mk-sep {
+  .line--mk-sep {
     color: var(--sl-color-gray-3);
   }
-  .mk-theirs {
+  .line--mk-theirs {
     color: #86b8f5;
   }
-  .ours-line {
+  .line--ours {
     color: #f5cd6b;
-    display: block;
   }
-  .theirs-line {
+  .line--theirs {
     color: #86d5f5;
-    display: block;
   }
-  .kept-line {
-    color: #7ee2a8;
-    display: block;
+  .line--kept {
+    color: var(--gp-green);
   }
 </style>

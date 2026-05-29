@@ -67,8 +67,8 @@
       box-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.8);
     }
     25% {
-      border-color: #ff5a3c;
-      box-shadow: 0 0 0 3px color-mix(in srgb, #ff5a3c 45%, transparent);
+      border-color: var(--gp-rehash);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--gp-rehash) 45%, transparent);
       transform: translateY(-3px);
     }
     100% {
@@ -127,7 +127,7 @@
     white-space: nowrap;
   }
   .row__val--link {
-    color: #4aa3ff;
+    color: var(--gp-feature);
   }
   .row__val--zero {
     color: var(--sl-color-gray-4);

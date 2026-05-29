@@ -5,6 +5,22 @@
   --sl-color-accent-high: #ffc4b8;
   --git-orange: #f05133;
   --git-orange-soft: #f8825f;
+  /* Secondary demo palette (mirrored in flow/graph.js COLORS). Same hues that
+     were previously hard-coded across components; centralised so every diagram
+     shares one source of truth. */
+  --gp-feature: #4aa3ff;
+  --gp-feature-stroke: #1f6fbf;
+  --gp-alt: #b07cff;
+  --gp-alt-stroke: #6b3fb0;
+  --gp-pick: #ff5fa2;
+  --gp-pick-stroke: #b03f6e;
+  --gp-green: #7ee2a8;
+  --gp-stash: #6b4bb0;
+  --gp-rehash: #ff5a3c;
+  /* Shared motion: the springy "settle" curve and the relocation duration used
+     when commits and pointers glide between positions. */
+  --gp-ease-move: cubic-bezier(0.34, 1.18, 0.64, 1);
+  --gp-dur-move: 600ms;
   /* Wider prose column. Per Starlight's layout math this also shrinks the
      right-hand table-of-contents column, giving demos and text more room. */
   --sl-content-width: 50rem;

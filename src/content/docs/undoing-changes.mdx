@@ -9,7 +9,7 @@ import ResetDemo from '../../components/ResetDemo.svelte';
 
 There will be times when you need to reset your working directory to a clean state. Whether it's due to mistakes or a need to abandon changes, Git provides several commands to help you manage this cleanup.
 
-One of the primary commands you'll use is `git restore`. This command was introduced as a cleaner and safer alternative to `git reset`, and it can be applied to both your working directory and staging area.
+One of the primary commands you'll use is `git restore`. Introduced in **Git 2.23**, it split the file-restoring job out of the overloaded `git checkout` into a clear, purpose-built command, and it can act on both your working directory and your staging area. Think of it as the modern, less error-prone way to do what people used to do with `git checkout <file>` and `git reset <file>`.
 
 To discard changes in your working directory, you can run:
 
@@ -45,9 +45,7 @@ You can choose to restore a file that you previously deleted while still needing
 git restore --source=HEAD <deleted-file>
 ```
 
-:::note
-Remember, `HEAD` is a pointer to the latest commit on the active branch. By playing with it you are able to move through commit history, and thus project versions.
-:::
+Here `HEAD` is just a pointer to the latest commit on the active branch, so `--source=HEAD` means "bring this file back to how it looked in the last commit."
 
 :::caution
 If you deleted a file but didn't commit that deletion, `git restore` will bring back the file from the last commit. If you already committed the deletion, you'd need to recover it from an earlier commit where the file still existed.
@@ -87,11 +85,7 @@ To do this, you can use the following command:
 git reset --soft HEAD~
 ```
 
-This command is elegant because it moves your `HEAD` back by one commit (i.e., resetting the erroneous commit you just made) while keeping your changes intact. Your working directory and staging area remain as they were, so you can modify the files or update the commit message before making a new commit.
-
-:::note
-The `~` operator is shorthand for `~1`, which tells Git you want to point one commit back in time. If you used `~2` you would move your `HEAD` back by 2 commits.
-:::
+This command is elegant because it moves your `HEAD` back by one commit (i.e., resetting the erroneous commit you just made) while keeping your changes intact. Your working directory and staging area remain as they were, so you can modify the files or update the commit message before making a new commit. The `~` here is shorthand for `~1` (one commit back); `HEAD~2` would move back two commits, and so on.
 
 If you need to reset your latest commit and discard all changes made since then (for example, to undo an erroneous merge), you can use:
 
@@ -161,6 +155,12 @@ git revert <commit-hash>
 
 This command generates a new commit that negates the changes introduced by the specified commit. Once done, you can push the reverted commit to the remote repository so everyone stays up to date.
 
+Reverting a **merge commit** needs one extra detail. A merge has two parents, so you must tell Git which one to treat as the mainline with `-m` (almost always `-m 1`, the branch you merged into):
+
+```sh
+git revert -m 1 <merge-commit-hash>
+```
+
 :::note
 If you accidentally committed sensitive information (like passwords or API keys), reverting alone may not be enough to remove it from the repository's history. In such cases, consider using the BFG Repo-Cleaner or `git filter-repo` to rewrite history and force push the changes (with caution). And always rotate the leaked secret.
 :::
@@ -181,7 +181,7 @@ Let's line up the three commands people most often confuse:
 | **Effect**           | Discards local file changes                 | Moves the branch pointer back and erases commits | Creates a new commit that undoes changes     |
 | **History rewrite**  | No (history untouched)                      | Yes (destructive)                                | No (safe)                                    |
 | **Use case**         | Drop edits you haven't committed            | Undo local commits before pushing                | Revert changes safely in a shared repository |
-| **Impact on remote** | None                                        | Requires force push (`git push --force`)         | Does not require force push                  |
+| **Impact on remote** | None                                        | Force push needed only if the commits were already pushed | Does not require force push          |
 
 ### When to use each
 

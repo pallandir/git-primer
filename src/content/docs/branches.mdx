@@ -100,6 +100,19 @@ git merge feature
 
 If the branches have diverged significantly, Git might encounter merge conflicts. In that case, you'll need to manually resolve conflicts before completing the merge.
 
+### Fast-forward vs. merge commit
+
+How a merge looks depends on whether `main` moved on while you worked:
+
+- If `main` has **no new commits** since you branched, Git just slides the `main` pointer forward to your branch tip. This is a **fast-forward**: no extra commit, perfectly linear history.
+- If **both** branches gained commits, Git performs a **three-way merge** and records a dedicated **merge commit** with two parents, tying the two lines of history together.
+
+Sometimes you want a merge commit even when a fast-forward would be possible, because it keeps a visible record of when a feature landed. Force one with:
+
+```sh
+git merge --no-ff feature
+```
+
 ## Resolving merge conflicts
 
 A merge conflict happens when two branches changed the **same lines of the same file** in different ways, and Git cannot decide on its own which version to keep. This is not an error you did something wrong, it's just Git asking for your help to make a decision.

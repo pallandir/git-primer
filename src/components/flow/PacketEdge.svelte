@@ -2,6 +2,7 @@
   import { onDestroy } from "svelte";
   import { getBezierPath, EdgeLabel } from "@xyflow/svelte";
   import { animate } from "animejs";
+  import { DUR, EASE } from "./graph.js";
 
   let {
     sourceX,
@@ -34,8 +35,8 @@
   let edgePath = $derived(geometry[0]);
   let labelX = $derived(geometry[1]);
   let labelY = $derived(geometry[2]);
-  let active = $derived(vis.activeEdge === index);
-  let label = $derived(vis.edgeLabels?.[index] ?? data.cmd);
+  let active = $derived(vis?.activeEdge === index);
+  let label = $derived(vis?.edgeLabels?.[index] ?? data.cmd);
 
   function fly() {
     const line = lineEl;
@@ -43,28 +44,28 @@
     if (!line || !packet) return;
     current?.pause();
     const length = line.getTotalLength();
-    const reverse = vis.fireDir === "reverse";
+    const reverse = vis?.fireDir === "reverse";
     const progress = { t: reverse ? 1 : 0 };
     packet.style.opacity = "1";
     current = animate(progress, {
       t: reverse ? 0 : 1,
-      duration: 650,
-      ease: "inOutQuad",
+      duration: DUR.packet,
+      ease: EASE.packet,
       onUpdate: () => {
-        if (!line.isConnected) return;
+        if (!line || !line.isConnected) return;
         const p = line.getPointAtLength(progress.t * length);
         packet.setAttribute("cx", p.x);
         packet.setAttribute("cy", p.y);
       },
       onComplete: () => {
-        packet.style.opacity = "0";
+        if (packet) packet.style.opacity = "0";
         data.onArrive?.();
       },
     });
   }
 
   $effect(() => {
-    const t = vis.fire[index] ?? 0;
+    const t = vis?.fire?.[index] ?? 0;
     if (t > seen) {
       seen = t;
       fly();

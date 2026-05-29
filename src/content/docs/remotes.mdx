@@ -134,7 +134,7 @@ Here is a recap:
 | Command                       | Behavior                                                                                                                   |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `git push`                    | Pushes the current branch to its upstream branch (if set). If no upstream exists, it will return an error.                 |
-| `git push origin`             | Pushes the current branch to a remote branch **with the same name** in `origin`. If no remote branch exists, it will fail. |
+| `git push origin`             | Pushes the current branch to the branch of the **same name** in `origin`, creating it on the remote if it doesn't exist yet (the first push won't set up tracking unless you add `-u`). |
 | `git push origin <branch>`    | Pushes the specified branch to `origin`, regardless of the current checked-out branch.                                     |
 | `git push -u origin <branch>` | Pushes the branch and **sets it as the upstream branch** (so future `git push` commands will work without specifying it).  |
 
@@ -155,12 +155,12 @@ When pushing your code, you may need to perform additional actions beyond simply
 
 Synchronizing your local repository with the remote one is crucial in Git. It ensures that your changes are submitted to others, while also allowing you to pull in changes from other contributors to stay up-to-date with the latest version of your project. Now that you know how to push your changes, let's cover how to fetch the changes made by others.
 
-The process to fetch changes involves two main steps:
+Getting your branch up to date with the remote is really **two separate steps**, and the important thing to understand is that `git fetch` only does the first one:
 
-- Get the latest content from the remote repository into your local repository.
-- Merge the fetched content into your current active branch.
+1. **Fetch:** download the latest commits from the remote into your local repository, updating your remote-tracking branches (like `origin/main`). Your own branch and your files are left untouched.
+2. **Merge:** when you're ready, merge those fetched commits into your active branch.
 
-The most basic command to download updates is:
+Keeping them separate is exactly what makes `fetch` safe: you can download and inspect what changed before you let any of it touch your work. The most basic command to download updates is:
 
 ```sh
 git fetch origin <branch>

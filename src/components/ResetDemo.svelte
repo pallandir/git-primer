@@ -1,7 +1,9 @@
 <script>
+  import { scale } from "svelte/transition";
+  import { backOut } from "svelte/easing";
   import GitDemo from "./GitDemo.svelte";
   import CommitGraph from "./CommitGraph.svelte";
-  import { colX, laneY } from "./flow/graph.js";
+  import { colX, laneY, DUR } from "./flow/graph.js";
 
   const commits = ["C1", "C2", "C3", "C4"];
 
@@ -77,13 +79,14 @@
 
   <div class="state">
     <span class="state__label">Working directory / staging:</span>
-    {#if mode === "clean"}
-      <span class="pill pill--ok">clean</span>
-    {:else if mode === "staged"}
-      <span class="pill pill--warn">📄 app.js — staged (changes kept)</span>
-    {:else}
-      <span class="pill pill--danger">clean (changes discarded)</span>
-    {/if}
+    {#key mode}
+      <span
+        class="pill pill--{mode === 'clean' ? 'ok' : mode === 'staged' ? 'warn' : 'danger'}"
+        in:scale={{ duration: DUR.card, start: 0.7, easing: backOut }}
+      >
+        {#if mode === "clean"}clean{:else if mode === "staged"}📄 app.js — staged (changes kept){:else}🗑 discarded (working dir back to C3){/if}
+      </span>
+    {/key}
   </div>
 </GitDemo>
 

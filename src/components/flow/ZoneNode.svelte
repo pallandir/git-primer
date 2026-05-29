@@ -2,13 +2,14 @@
   import { Handle, Position } from "@xyflow/svelte";
   import { scale } from "svelte/transition";
   import { backOut } from "svelte/easing";
+  import { DUR } from "./graph.js";
 
   let { data } = $props();
 
   const vis = data.vis;
   const index = data.index;
 
-  let zone = $derived(vis.zones[index] ?? {});
+  let zone = $derived(vis?.zones?.[index] ?? {});
   let active = $derived(!!zone.active);
   let card = $derived(zone.card ?? null);
 </script>
@@ -31,7 +32,7 @@
       {#key card.kind + card.text}
         <div
           class="card card--{card.kind}"
-          in:scale={{ duration: 260, start: 0.6, easing: backOut }}
+          in:scale={{ duration: DUR.card, start: 0.6, easing: backOut }}
         >
           {#if card.icon}<span class="card__icon">{card.icon}</span>{/if}
           {#if card.kind === "commit"}<span class="card__commit-dot"></span>{/if}

@@ -113,7 +113,7 @@ As a project grows over months or years, its `.git` directory accumulates a lot 
 
 ### Garbage collection
 
-Git stores each new object separately at first (these are called "loose" objects). The `git gc` command compresses them into packed files, removes objects that are no longer reachable, and tidies up references:
+Git stores each new object separately at first (these are called "loose" objects). The `git gc` command compresses them into packfiles, prunes unreachable objects that are **older than a grace period** (2 weeks by default, so very recent ones are kept as a safety net), and tidies up references:
 
 ```sh
 git gc
@@ -149,6 +149,18 @@ This dramatically reduces clone time and disk usage. You can also use a **partia
 git clone --filter=blob:none <remote-repository-url>
 ```
 
+Both shallow and partial clones rely on server support, which the major hosting platforms provide.
+
+### Checking out only part of a repository
+
+In a large monorepo you may only care about a handful of directories. **Sparse-checkout** populates just those in your working tree and leaves the rest out, which keeps everyday commands fast:
+
+```sh
+git sparse-checkout set <dir1> <dir2>
+```
+
+Paired with a partial clone, this is how teams stay productive in repositories with millions of files.
+
 ### A quick recap
 
 | Goal                              | Command                                      |
@@ -158,5 +170,6 @@ git clone --filter=blob:none <remote-repository-url>
 | Automatic background upkeep       | `git maintenance start`                       |
 | Clone only recent history         | `git clone --depth 1 <url>`                   |
 | Clone without downloading blobs   | `git clone --filter=blob:none <url>`          |
+| Check out only some directories   | `git sparse-checkout set <dir>`               |
 
 Between submodules, LFS, and these maintenance commands, you now have the tools to keep even a large, long-lived repository fast and manageable.

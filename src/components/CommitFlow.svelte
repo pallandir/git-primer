@@ -7,6 +7,7 @@
     Position,
   } from "@xyflow/svelte";
   import "@xyflow/svelte/dist/style.css";
+  import GitDemo from "./GitDemo.svelte";
   import TimelineControls from "./TimelineControls.svelte";
   import ZoneNode from "./flow/ZoneNode.svelte";
   import PacketEdge from "./flow/PacketEdge.svelte";
@@ -121,24 +122,17 @@
   });
 </script>
 
-<div class="demo">
-  <header class="demo__bar">
-    <div class="demo__controls">
-      <TimelineControls
-        count={4}
-        bind:step={stage}
-        interval={2000}
-        labels={["", "git add", "git commit", "git push"]}
-      />
-    </div>
+<GitDemo caption={captions[stage]} step={stage} count={captions.length} height="440px">
+  {#snippet controls()}
+    <TimelineControls
+      count={4}
+      bind:step={stage}
+      interval={2000}
+      labels={["", "git add", "git commit", "git push"]}
+    />
+  {/snippet}
 
-    <div class="demo__caption">
-      <span class="demo__step">Step {stage + 1} of {captions.length}</span>
-      <p class="demo__caption-text">{captions[stage]}</p>
-    </div>
-  </header>
-
-  <div class="demo__canvas">
+  <div class="cf__canvas">
     <SvelteFlow
       bind:nodes
       bind:edges
@@ -159,94 +153,17 @@
       <Background variant={BackgroundVariant.Dots} gap={22} size={1} />
     </SvelteFlow>
   </div>
-</div>
+</GitDemo>
 
 <style>
-  .demo {
-    display: flex;
-    flex-direction: column;
-    height: 440px;
-    margin: 1.75rem 0;
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.85rem;
-    overflow: hidden;
+  .cf__canvas {
+    position: absolute;
+    inset: 0;
+  }
+  .cf__canvas :global(.svelte-flow) {
     background: var(--sl-color-black);
   }
-
-  .demo__bar {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1.5rem;
-    padding: 0.9rem 1.1rem;
-    border-bottom: 1px solid var(--sl-color-gray-5);
-  }
-
-  .demo__controls {
-    flex: 0 1 26rem;
-    min-width: 0;
-  }
-  /* Compact variant of the shared TimelineControls for this header bar.
-     The margin reset cancels Starlight's prose sibling spacing, which would
-     otherwise push every button after the first down by 1rem. */
-  .demo__controls :global(.tl) {
-    --ctl-h: 2rem;
-    gap: 0.55rem;
-  }
-  .demo__controls :global(.tl *) {
-    margin: 0;
-  }
-  .demo__controls :global(.tl__btn) {
-    font-size: 0.78rem;
-    padding: 0 0.7rem;
-  }
-
-  .demo__caption {
-    flex: 0 1 24rem;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    text-align: right;
-  }
-  .demo__step {
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--git-orange);
-    font-variant-numeric: tabular-nums;
-  }
-  .demo__caption-text {
-    margin: 0;
-    font-size: 0.9rem;
-    line-height: 1.45;
-    color: var(--sl-color-gray-1);
-  }
-
-  .demo__canvas {
-    flex: 1;
-    min-height: 0;
-    position: relative;
-  }
-  .demo__canvas :global(.svelte-flow) {
-    background: var(--sl-color-black);
-  }
-  .demo__canvas :global(.svelte-flow__node) {
+  .cf__canvas :global(.svelte-flow__node) {
     cursor: default;
-  }
-
-  @media (max-width: 640px) {
-    .demo {
-      height: 540px;
-    }
-    .demo__bar {
-      flex-direction: column;
-      gap: 0.85rem;
-    }
-    .demo__caption {
-      flex: none;
-      text-align: left;
-    }
   }
 </style>

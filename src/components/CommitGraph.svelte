@@ -1,7 +1,8 @@
 <script>
+  import { onMount } from "svelte";
   import { fade } from "svelte/transition";
   import { backOut } from "svelte/easing";
-  import { R, edgePath, pillW } from "./flow/graph.js";
+  import { R, edgePath, pillW, DUR, prefersReducedMotion } from "./flow/graph.js";
 
   let {
     nodes = [],
@@ -12,9 +13,104 @@
     label = "Git commit graph",
   } = $props();
 
-  let map = $derived(Object.fromEntries(nodes.map((n) => [n.id, n])));
+  // Live positions per node id, mutated frame-by-frame by anime.js. Edges and
+  // pointers read from here, so a connector bends and follows its commit as it
+  // glides between lanes instead of snapping to the new endpoint.
+  const pos = new Map();
+  const tweens = new Map();
+  let frame = $state(0);
+  let animate = null;
+  let easeMove = null;
+  let animeReady = $state(false);
 
-  function pop(_node, { d = 440 } = {}) {
+  onMount(() => {
+    let alive = true;
+    import("animejs").then((m) => {
+      if (!alive) return;
+      animate = m.animate;
+      easeMove = m.cubicBezier(0.34, 1.18, 0.64, 1);
+      animeReady = true;
+    });
+    return () => {
+      alive = false;
+      for (const t of tweens.values()) t.pause();
+    };
+  });
+
+  function tweenTo(p, x, y) {
+    tweens.get(p.__id)?.pause();
+    const t = animate(p, {
+      x,
+      y,
+      duration: DUR.move,
+      ease: easeMove,
+      onUpdate: () => frame++,
+      onComplete: () => frame++,
+    });
+    return t;
+  }
+
+  $effect(() => {
+    const reduced = prefersReducedMotion();
+    for (const n of nodes) {
+      const p = pos.get(n.id);
+      if (!p) {
+        // A node carrying `enterFrom` flies in from that point (e.g. a
+        // cherry-picked commit gliding up from its branch onto main).
+        if (n.enterFrom && animeReady && !reduced) {
+          const start = { __id: n.id, x: n.enterFrom.x, y: n.enterFrom.y };
+          pos.set(n.id, start);
+          tweens.set(n.id, tweenTo(start, n.x, n.y));
+        } else {
+          pos.set(n.id, { __id: n.id, x: n.x, y: n.y });
+        }
+        continue;
+      }
+      if (p.x === n.x && p.y === n.y) continue;
+      if (reduced || !animeReady) {
+        p.x = n.x;
+        p.y = n.y;
+        frame++;
+        continue;
+      }
+      tweens.set(n.id, tweenTo(p, n.x, n.y));
+    }
+    for (const id of [...pos.keys()]) {
+      if (!nodes.some((n) => n.id === id)) {
+        tweens.get(id)?.pause();
+        tweens.delete(id);
+        pos.delete(id);
+      }
+    }
+  });
+
+  const live = (id, fx, fy) => pos.get(id) ?? { x: fx, y: fy };
+
+  let view = $derived.by(() => {
+    frame; // recompute on every animation frame while a tween runs
+    const map = {};
+    for (const n of nodes) map[n.id] = live(n.id, n.x, n.y);
+    return {
+      nodes: nodes.map((n) => ({ ...n, _x: map[n.id].x, _y: map[n.id].y })),
+      edges: edges
+        .filter((e) => map[e.from] && map[e.to])
+        .map((e) => ({ ...e, _d: edgePath(map[e.from], map[e.to]) })),
+      pointers: pointers
+        .map((p) => {
+          const a = map[p.at];
+          if (!a) return null;
+          return {
+            ...p,
+            _x: a.x,
+            _y: a.y - R - 16 - (p.level ?? 0) * 25,
+            _w: pillW(p.label),
+          };
+        })
+        .filter(Boolean),
+    };
+  });
+
+  function pop(_node, { d = DUR.pop } = {}) {
     return {
       duration: d,
       css: (t) => {
@@ -24,29 +120,44 @@
     };
   }
 
-  function ptrXY(p) {
-    const n = map[p.at];
-    if (!n) return null;
-    return { x: n.x, y: n.y - R - 16 - (p.level ?? 0) * 25 };
+  function draw(node, { duration = DUR.draw } = {}) {
+    let len = 0;
+    try {
+      len = node.getTotalLength();
+    } catch {
+      len = 0;
+    }
+    return {
+      duration,
+      css: (t) =>
+        `opacity:${t};stroke-dasharray:${len};stroke-dashoffset:${len * (1 - t)}`,
+    };
   }
 </script>
 
 <svg viewBox={`0 0 ${width} ${height}`} class="cg" role="img" aria-label={label}>
-  {#each edges as e (e.id)}
-    {#if map[e.from] && map[e.to]}
+  {#each view.edges as e (e.id)}
+    {#if e.ghost}
       <path
-        d={edgePath(map[e.from], map[e.to])}
-        class={`cg__edge cg__edge--${e.variant ?? "main"}`}
-        class:cg__edge--ghost={e.ghost}
+        d={e._d}
+        class={`cg__edge cg__edge--${e.variant ?? "main"} cg__edge--ghost`}
         fill="none"
         in:fade={{ duration: 320 }}
+        out:fade={{ duration: 200 }}
+      />
+    {:else}
+      <path
+        d={e._d}
+        class={`cg__edge cg__edge--${e.variant ?? "main"}`}
+        fill="none"
+        in:draw
         out:fade={{ duration: 200 }}
       />
     {/if}
   {/each}
 
-  {#each nodes as n (n.id)}
-    <g class="cg__node" style={`transform:translate(${n.x}px,${n.y}px)`}>
+  {#each view.nodes as n (n.id)}
+    <g class="cg__node" style={`transform:translate(${n._x}px,${n._y}px)`}>
       <g in:pop>
         <circle
           r={R}
@@ -59,22 +170,18 @@
     </g>
   {/each}
 
-  {#each pointers as p (p.key)}
-    {@const xy = ptrXY(p)}
-    {#if xy}
-      {@const w = pillW(p.label)}
-      <g
-        class={`cg__ptr cg__ptr--${p.variant ?? "branch"}`}
-        class:cg__ptr--detached={p.detached}
-        style={`transform:translate(${xy.x}px,${xy.y}px)`}
-      >
-        <g in:pop={{ d: 360 }}>
-          <rect x={-w / 2} y="-13" width={w} height="22" rx="6" class="cg__pill" />
-          <text class="cg__ptext">{p.label}</text>
-          <path d="M0 9 L-5 16 L5 16 Z" class="cg__tip" />
-        </g>
+  {#each view.pointers as p (p.key)}
+    <g
+      class={`cg__ptr cg__ptr--${p.variant ?? "branch"}`}
+      class:cg__ptr--detached={p.detached}
+      style={`transform:translate(${p._x}px,${p._y}px)`}
+    >
+      <g in:pop={{ d: DUR.pill }}>
+        <rect x={-p._w / 2} y="-13" width={p._w} height="22" rx="6" class="cg__pill" />
+        <text class="cg__ptext">{p.label}</text>
+        <path d="M0 9 L-5 16 L5 16 Z" class="cg__tip" />
       </g>
-    {/if}
+    </g>
   {/each}
 </svg>
 
@@ -95,13 +202,13 @@
     stroke: var(--git-orange);
   }
   .cg__edge--feature {
-    stroke: #4aa3ff;
+    stroke: var(--gp-feature);
   }
   .cg__edge--alt {
-    stroke: #b07cff;
+    stroke: var(--gp-alt);
   }
   .cg__edge--pick {
-    stroke: #ff5fa2;
+    stroke: var(--gp-pick);
   }
   .cg__edge--ghost {
     stroke: var(--sl-color-gray-5);
@@ -109,9 +216,9 @@
     opacity: 0.55;
   }
 
-  .cg__node {
-    transition: transform 0.6s cubic-bezier(0.34, 1.18, 0.64, 1);
-  }
+  /* Position is driven frame-by-frame from JS (see the anime.js tween above),
+     so there is no CSS transform transition here, which would otherwise fight
+     the per-frame updates and add lag. */
   .cg__dot {
     stroke-width: 2.5;
     transition:
@@ -124,16 +231,16 @@
     stroke: color-mix(in srgb, var(--git-orange) 45%, #000);
   }
   .cg__dot--feature {
-    fill: #4aa3ff;
-    stroke: #1f6fbf;
+    fill: var(--gp-feature);
+    stroke: var(--gp-feature-stroke);
   }
   .cg__dot--alt {
-    fill: #b07cff;
-    stroke: #6b3fb0;
+    fill: var(--gp-alt);
+    stroke: var(--gp-alt-stroke);
   }
   .cg__dot--pick {
-    fill: #ff5fa2;
-    stroke: #b03f6e;
+    fill: var(--gp-pick);
+    stroke: var(--gp-pick-stroke);
   }
   .cg__dot--merge {
     fill: var(--sl-color-gray-6);
@@ -158,9 +265,6 @@
     fill: var(--sl-color-gray-3);
   }
 
-  .cg__ptr {
-    transition: transform 0.6s cubic-bezier(0.34, 1.18, 0.64, 1);
-  }
   .cg__pill {
     fill: var(--sl-color-gray-6);
     stroke-width: 1.6;
@@ -183,30 +287,32 @@
     fill: var(--git-orange);
   }
   .cg__ptr--feature .cg__pill {
-    stroke: #4aa3ff;
+    stroke: var(--gp-feature);
   }
   .cg__ptr--feature .cg__tip {
-    fill: #4aa3ff;
+    fill: var(--gp-feature);
   }
   .cg__ptr--alt .cg__pill {
-    stroke: #b07cff;
+    stroke: var(--gp-alt);
   }
   .cg__ptr--alt .cg__tip {
-    fill: #b07cff;
+    fill: var(--gp-alt);
   }
   .cg__ptr--origin .cg__pill {
-    stroke: #4aa3ff;
-    fill: color-mix(in srgb, #4aa3ff 14%, var(--sl-color-gray-6));
+    stroke: var(--gp-feature);
+    fill: color-mix(in srgb, var(--gp-feature) 14%, var(--sl-color-gray-6));
   }
   .cg__ptr--origin .cg__ptext {
     fill: #9ccbff;
   }
   .cg__ptr--origin .cg__tip {
-    fill: #4aa3ff;
+    fill: var(--gp-feature);
   }
   .cg__ptr--head .cg__pill {
     fill: var(--git-orange);
     stroke: color-mix(in srgb, var(--git-orange) 55%, #000);
+    filter: drop-shadow(0 0 0 transparent);
+    animation: cg-head-glow 2.4s ease-in-out infinite;
   }
   .cg__ptr--head .cg__ptext {
     fill: #fff;
@@ -219,8 +325,28 @@
   .cg__ptr--detached .cg__pill {
     fill: #b3261e;
     stroke: #7a1813;
+    animation: none;
   }
   .cg__ptr--detached .cg__tip {
     fill: #b3261e;
+  }
+
+  @keyframes cg-head-glow {
+    0%,
+    100% {
+      filter: drop-shadow(
+        0 0 1px color-mix(in srgb, var(--git-orange) 40%, transparent)
+      );
+    }
+    50% {
+      filter: drop-shadow(
+        0 0 6px color-mix(in srgb, var(--git-orange) 85%, transparent)
+      );
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cg__ptr--head .cg__pill {
+      animation: none;
+    }
   }
 </style>

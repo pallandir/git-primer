@@ -54,6 +54,14 @@ pick 7g8h9i0 Add form validation
 
 Save and close the editor, and Git replays the commits according to your instructions, producing a cleaner history.
 
+If a commit doesn't replay cleanly, the rebase pauses on a conflict, just like a merge. Resolve the files, stage them, and continue, or back out of the whole operation:
+
+```sh
+git add <resolved-files>
+git rebase --continue   # resume after fixing the conflict
+git rebase --abort      # give up and return to where you started
+```
+
 :::caution
 Interactive rebase **rewrites commit hashes**. Use it freely on your local, unpushed work. If you've already pushed the branch, rebasing means you'll need a force push, which can disrupt teammates. Prefer `--force-with-lease` over `--force` in that case, as it refuses to overwrite work you haven't seen yet.
 :::
@@ -97,8 +105,10 @@ Or, if you'd rather bring the lost commit back as a new branch without touching 
 git branch recovered 8f0cd01
 ```
 
+The reflog is **local to your machine**, and it is a recovery tool for your own mistakes, not a backup of the remote. Entries also expire: reachable ones after **90 days** by default (`gc.reflogExpire`), and entries that are no longer reachable from any branch, which is exactly the lost-commit case above, after **30 days** (`gc.reflogExpireUnreachable`). So the reflog can rescue you from a recent mistake, but don't treat it as long-term storage.
+
 :::tip
-The reflog is **local to your machine** and entries expire after a while (90 days by default). It's a recovery tool for your own mistakes, not a backup of the remote. Still, it has saved countless developers from despair.
+The moment you realize you've lost a commit, run `git reflog` before doing anything else, and recover it the same day. Waiting risks the entry expiring or being garbage-collected.
 :::
 
 ## Cherry-picking commits (git cherry-pick)
@@ -146,7 +156,7 @@ Watch your changes get tucked away and then restored:
 
 <StashDemo client:visible />
 
-Stashing tucks your uncommitted changes away safely and gives you a clean working directory:
+Think of the stash as a **clipboard for work in progress**: a quick, local convenience, not a place to store work long term. Stashing tucks your uncommitted changes away safely and gives you a clean working directory:
 
 ```sh
 git stash
@@ -163,11 +173,13 @@ git stash pop
 A few useful variations:
 
 ```sh
-git stash list            # See everything you've stashed
-git stash save "message"  # Stash with a descriptive label
-git stash drop            # Delete the latest stash
-git stash clear           # Delete all stashes
+git stash list                # See everything you've stashed
+git stash push -m "message"   # Stash with a descriptive label
+git stash drop                # Delete the latest stash
+git stash clear               # Delete all stashes
 ```
+
+The older `git stash save "message"` still works but is **deprecated**, so prefer `git stash push -m` going forward.
 
 By default, `git stash` only saves tracked files. If you also want to include new, untracked files, add the `-u` flag:
 
@@ -176,5 +188,5 @@ git stash -u
 ```
 
 :::tip
-Think of the stash as a clipboard for work in progress. It's a quick, local convenience, not a place to store work long term. For anything you want to keep, make a commit on a branch instead.
+Stashes are easy to forget about. Run `git stash list` now and then, and for anything you want to keep, turn it into a real commit on a branch rather than leaving it stashed.
 :::

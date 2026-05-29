@@ -5,6 +5,7 @@
   import GitDemo from "./GitDemo.svelte";
   import CommitBlock from "./flow/CommitBlock.svelte";
   import FitViewport from "./flow/FitViewport.svelte";
+  import { prefersReducedMotion } from "./flow/graph.js";
 
   const nodeTypes = { commit: CommitBlock };
   const GENESIS = "0000000";
@@ -81,20 +82,41 @@
     });
   }
 
-  function clearFlash() {
-    setTimeout(() => buildNodes(new Set()), 900);
+  let flashing = new Set();
+  let flashTimers = [];
+
+  function setFlash(idx, on) {
+    if (on) flashing.add(idx);
+    else flashing.delete(idx);
+    buildNodes(new Set(flashing));
   }
 
   async function recompute(changedFrom = 0) {
     const old = [...hashes];
     hashes = await computeHashes();
-    const flashSet = new Set();
+    const changed = [];
     for (let i = 0; i < hashes.length; i++) {
-      if (i >= changedFrom || old[i] !== hashes[i]) flashSet.add(i);
+      if (i >= changedFrom || old[i] !== hashes[i]) changed.push(i);
     }
-    buildNodes(flashSet);
-    clearFlash();
-    return flashSet;
+    flashTimers.forEach(clearTimeout);
+    flashTimers = [];
+    flashing = new Set();
+    buildNodes(new Set());
+    // Flash the rewritten blocks one after another, left to right, so the
+    // re-hash cascade is something you watch propagate down the chain rather
+    // than a single simultaneous blink.
+    const step = prefersReducedMotion() ? 0 : 150;
+    changed
+      .sort((a, b) => a - b)
+      .forEach((idx, k) => {
+        flashTimers.push(
+          setTimeout(() => {
+            setFlash(idx, true);
+            flashTimers.push(setTimeout(() => setFlash(idx, false), 820));
+          }, k * step),
+        );
+      });
+    return new Set(changed);
   }
 
   async function onEdit(index, value) {
@@ -236,7 +258,7 @@
     stroke-width: 2;
   }
   .chain :global(.svelte-flow__edge.animated .svelte-flow__edge-path) {
-    stroke: #ff5a3c;
+    stroke: var(--gp-rehash);
   }
   .chain :global(.svelte-flow__edge-text) {
     fill: var(--sl-color-gray-3);

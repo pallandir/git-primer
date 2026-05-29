@@ -21,7 +21,14 @@
       { id: "C", x: colX(2), y: laneY("main"), variant: "main" },
       { id: "Y", x: colX(2), y: laneY("feature"), variant: "alt" },
       { id: "X", x: colX(3), y: laneY("feature"), variant: "pick", ghost: picked },
-      picked && { id: "Xp", x: colX(3), y: laneY("main"), variant: "pick", label: "X'" },
+      picked && {
+        id: "Xp",
+        x: colX(3),
+        y: laneY("main"),
+        variant: "pick",
+        label: "X'",
+        enterFrom: { x: colX(3), y: laneY("feature") },
+      },
     ].filter(Boolean),
   );
 

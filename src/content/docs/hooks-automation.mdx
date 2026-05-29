@@ -106,7 +106,7 @@ Now you can commit a `.githooks/` folder, and everyone who runs that one config 
 
 For most teams, a dedicated tool is the smoother path. The two most popular are:
 
-- **Husky** for JavaScript/Node projects. It installs and manages hooks from your `package.json` setup, so they're versioned and shared automatically.
+- **Husky** for JavaScript/Node projects. Current versions store hooks as scripts in a versioned `.husky/` directory (set up once with `npx husky init`), so the whole team shares them automatically.
 - **pre-commit** (the framework, available at [pre-commit.com](https://pre-commit.com/)) for any language. You describe the checks you want in a `.pre-commit-config.yaml` file, and it handles installing and running them.
 
 These tools let your whole team enforce the same standards (formatting, linting, secret scanning) without anyone copying scripts by hand.

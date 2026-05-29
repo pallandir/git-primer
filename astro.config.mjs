@@ -2,11 +2,19 @@ import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import svelte from "@astrojs/svelte";
 import mermaid from "astro-mermaid";
+import remarkGfm from "remark-gfm";
 
 // Deployed at https://pallandir.github.io/git-primer
 export default defineConfig({
   site: "https://pallandir.github.io",
   base: "/git-primer",
+  // astro-mermaid (v2) injects its remark plugin through Astro 6's markdown
+  // config and, in doing so, drops Astro's built-in GitHub-flavoured Markdown,
+  // which is what turns `| ... |` blocks into real tables. Re-adding remark-gfm
+  // here restores table (and strikethrough/task-list) rendering across chapters.
+  markdown: {
+    remarkPlugins: [remarkGfm],
+  },
   integrations: [
     // astro-mermaid must run before Starlight's markdown processing
     mermaid({

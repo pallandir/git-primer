@@ -36,23 +36,20 @@ This command will create a local copy of the remote repository, including all fi
 
 ## Understanding the .git folder
 
-After running the `git init` command, Git will create a hidden `.git` directory, which contains all the metadata and version history for your repository. The structure looks like this:
+After running the `git init` command, Git will create a hidden `.git` directory, which contains all the metadata and version history for your repository. On a brand new repository it looks like this:
 
 ```
 .git
-├── hooks/
-├── info/
-├── logs/
-├── objects/
-├── refs/
-├── COMMIT_EDITMSG
-├── config
-├── description
-├── FETCH_HEAD
-├── HEAD
-├── index
-└── ORIG_HEAD
+├── HEAD          # points at the branch you are on
+├── config        # this repository's settings
+├── description   # only used by the GitWeb viewer
+├── hooks/        # sample hook scripts (see Chapter 9)
+├── info/         # extra config, e.g. a repo-specific exclude file
+├── objects/      # every blob, tree, commit and tag
+└── refs/         # branches and tags
 ```
+
+That is everything a fresh repo needs and nothing more. Other entries you'll often see, like `index`, `logs/`, `COMMIT_EDITMSG`, `FETCH_HEAD`, and `ORIG_HEAD`, are **not** there yet. They appear only once you actually stage a file, commit, fetch, or reset. We take a full tour of `.git`, including the staging `index`, in [Chapter 7](/git-primer/internals/).
 
 Let's break down the most important files and directories.
 

@@ -2,7 +2,7 @@
   import GitDemo from "./GitDemo.svelte";
   import TimelineControls from "./TimelineControls.svelte";
   import CommitGraph from "./CommitGraph.svelte";
-  import { colX, laneY, stackLevels } from "./flow/graph.js";
+  import { colX, laneY, stackLevels, DUR, EASE } from "./flow/graph.js";
 
   // Each step is a full snapshot of both repositories, so scrubbing backwards
   // and forwards always lands on a valid, consistent state.
@@ -82,6 +82,7 @@
   let localEl;
   let remoteEl;
   let token = $state({ on: false, id: "", x: 0, y: 0 });
+  let flying = $state(false);
 
   function panelGraph(commits, tip, lane = "main") {
     const tipIdx = commits.indexOf(tip);
@@ -128,13 +129,17 @@
     const { animate } = await import("animejs");
     const obj = { x: start.x, y: start.y };
     token = { on: true, id, x: start.x, y: start.y };
+    flying = true;
     animate(obj, {
       x: end.x,
       y: end.y,
-      duration: 760,
-      ease: "inOutQuad",
+      duration: DUR.packet,
+      ease: EASE.packet,
       onUpdate: () => (token = { on: true, id, x: obj.x, y: obj.y }),
-      onComplete: () => (token = { on: false, id, x: end.x, y: end.y }),
+      onComplete: () => {
+        token = { on: false, id, x: end.x, y: end.y };
+        flying = false;
+      },
     });
   }
 
@@ -168,7 +173,9 @@
       </div>
     </div>
 
-    <div class="rs__bridge" aria-hidden="true"><span class="rs__bridge-line"></span></div>
+    <div class="rs__bridge" aria-hidden="true">
+      <span class="rs__bridge-line" class:rs__bridge-line--active={flying}></span>
+    </div>
 
     <div class="rs__panel">
       <div class="rs__head"><span class="rs__icon">☁️</span> Remote (origin)</div>
@@ -224,30 +231,46 @@
     width: 1.5rem;
   }
   .rs__bridge-line {
-    width: 2px;
+    width: 3px;
     height: 55%;
     background: repeating-linear-gradient(
       to bottom,
       var(--sl-color-gray-5) 0 6px,
       transparent 6px 12px
     );
+    transition: background 0.25s ease;
+  }
+  .rs__bridge-line--active {
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--git-orange) 0 6px,
+      transparent 6px 15px
+    );
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--git-orange) 70%, transparent));
+    animation: rs-march 0.7s linear infinite;
+  }
+  @keyframes rs-march {
+    to {
+      background-position-y: 21px;
+    }
   }
   .rs__fly {
     position: absolute;
     top: 0;
     left: 0;
-    margin: -1.1rem 0 0 -1.1rem;
+    margin: -1rem 0 0 -1rem;
     display: grid;
     place-items: center;
-    width: 2.2rem;
-    height: 2.2rem;
+    width: 2rem;
+    height: 2rem;
     border-radius: 50%;
-    background: var(--git-orange-soft);
-    color: #fff;
-    font-size: 0.72rem;
+    background: #fff;
+    color: var(--git-orange);
+    font-size: 0.7rem;
     font-weight: 700;
     font-family: var(--__sl-font-mono, monospace);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--git-orange) 35%, transparent);
+    border: 3px solid var(--git-orange);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--git-orange) 85%, transparent);
     pointer-events: none;
     z-index: 5;
   }

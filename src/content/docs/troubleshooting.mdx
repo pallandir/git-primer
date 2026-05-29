@@ -49,6 +49,7 @@ git diff          # What exactly is disputed?
 
 - To accept **your** branch's version of a file wholesale: `git checkout --ours <file>`
 - To accept the **incoming** branch's version: `git checkout --theirs <file>`
+- One gotcha: during a **rebase**, `--ours` and `--theirs` are swapped compared to a merge, because a rebase replays your commits on top of the other branch. When in doubt, check `git status`, which names the branches explicitly.
 - After editing a file by hand, mark it resolved with `git add <file>`.
 - To bail out completely and pretend the merge never started: `git merge --abort`.
 
@@ -103,6 +104,18 @@ git stash
 git pull
 git stash pop
 ```
+
+### "Permission denied (publickey)" or "Authentication failed"
+
+These mean the platform rejected your credentials, not that anything is wrong with your repository.
+
+Over **SSH** (a `git@github.com:...` remote), `Permission denied (publickey)` means your SSH key isn't registered with the platform (or isn't loaded into your agent). Generate a key, add the public half to your account, then test the connection:
+
+```sh
+ssh -T git@github.com
+```
+
+Over **HTTPS** (a `https://...` remote), `Authentication failed` almost always means you entered your account password. As noted in [Chapter 13](/git-primer/other-tools/), platforms no longer accept passwords for Git operations: create a **personal access token** and use it in place of the password.
 
 ## Diagnosing issues with git fsck and git gc
 

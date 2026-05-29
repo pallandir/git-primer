@@ -47,6 +47,21 @@ Or to stage everything at once:
 git add .
 ```
 
+#### Reviewing changes before you stage (git diff)
+
+It's worth looking at exactly what changed before you stage it. `git diff` shows your **unstaged** changes (working directory vs. staging area), while `git diff --staged` shows what you've **already staged**, which is precisely what the next commit will contain:
+
+```sh
+git diff            # changes you have not staged yet
+git diff --staged   # changes already staged for the next commit
+```
+
+For finer control, `git add -p` walks you through each change "hunk" and asks whether to stage it. This is how you split a messy working directory into small, logical commits:
+
+```sh
+git add -p
+```
+
 ### The local repository
 
 #### Committing changes (git commit)
